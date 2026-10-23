@@ -5,6 +5,7 @@ class Services_Retriever_Schedule
 {
     const SETTING = 'retrieve_interval_seconds';
     const REQUEST = 'retrieve_requested_id';
+    const INITIAL_PENDING = 'retrieve_initial_sync_pending';
     const OPTIONS = [0 => 'Manual only', 300 => 'Every 5 minutes', 900 => 'Every 15 minutes',
         1800 => 'Every 30 minutes', 3600 => 'Every hour', 21600 => 'Every 6 hours',
         43200 => 'Every 12 hours', 86400 => 'Every day'];
@@ -18,6 +19,19 @@ class Services_Retriever_Schedule
     public static function validate($value)
     {
         return is_scalar($value) && preg_match('/^\d+$/D', (string) $value) && array_key_exists((int) $value, self::OPTIONS);
+    }
+
+    /** Queue the first run even when automatic retrieval is set to manual-only. */
+    public static function queueInitial(Services_Settings_Container $settings)
+    {
+        $server = $settings->get('nntp_hdr');
+        if (empty($server['host'])) {
+            return false;
+        }
+        $settings->set(self::INITIAL_PENDING, true);
+        $settings->set(self::REQUEST, bin2hex(random_bytes(12)));
+
+        return true;
     }
 
     public static function path(Dao_Factory $dao, $suffix = 'json')
@@ -54,8 +68,9 @@ class Services_Retriever_Schedule
         ]);
     }
 
-    public static function due($interval, array $state, $request, $now)
+    public static function due($interval, array $state, $request, $now, $onboardingPending = false)
     {
+        if ($onboardingPending) return false;
         if ($request !== '' && $request !== ($state['handledRequest'] ?? '')) return true;
         $last = (int) ($state['finished'] ?? $state['attempted'] ?? 0);
         return $interval > 0 && $now >= $last + $interval;

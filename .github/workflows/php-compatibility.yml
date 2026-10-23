@@ -41,6 +41,12 @@ jobs:
       - name: Check local HTTPS certificates
         run: php tests/local-https.test.php
 
+      - name: Check initial sync, history resumption and setup scheduling
+        if: matrix.php-version == '8.3'
+        run: |
+          vendor/bin/phpunit --no-configuration --bootstrap vendor/autoload.php --do-not-cache-result tests/Services/Retriever/ServicesRetrieverInitialSyncTest.php
+          php tests/integration/retrieval-schedule.php
+
       - name: Configure PHPCompatibility
         run: vendor/bin/phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility
 

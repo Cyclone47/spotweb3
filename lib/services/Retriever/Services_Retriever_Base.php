@@ -41,7 +41,7 @@ abstract class Services_Retriever_Base
     protected $_binServer;
     protected $_daoFactory;
 
-    private $_msgdata;
+    protected $_msgdata;
 
     /**
      * Records retrieval progress for the sync indicator in the web interface.
@@ -235,7 +235,7 @@ abstract class Services_Retriever_Base
 
         $startArticleNr = $curArticleNr;
         $this->reportProgress([
-            'phase' => 'running', 'start' => $startArticleNr, 'first' => $this->_msgdata['first'], 'last' => $this->_msgdata['last'],
+            'phase' => 'running', 'stage' => 'history', 'start' => $startArticleNr, 'first' => $this->_msgdata['first'], 'last' => $this->_msgdata['last'],
             'cur' => $curArticleNr, 'processed' => 0, 'started' => time(), 'finished' => null,
         ]);
         $lastReport = time();

@@ -4,9 +4,73 @@ require_once __DIR__.'/../../exceptions/PipelinedRetrieverDeferredException.php'
 require_once __DIR__.'/../Nntp/Services_Nntp_SpotReader.php';
 require_once __DIR__.'/Services_Retriever_PipelinedArticleBatch.php';
 require_once __DIR__.'/Services_Retriever_SpotsArticleParser.php';
+require_once __DIR__.'/Services_Retriever_Schedule.php';
 
 class Services_Retriever_Spots extends Services_Retriever_Base
 {
+    const PREVIEW_ORDER = 'retrieve_spots_out_of_order';
+    const PREVIEW_TARGET = 200;
+    private $_initialSync = false;
+    private $_previewMode = false;
+    private $_previewCount = 0;
+    private $_previewAdded = 0;
+
+    public function perform()
+    {
+        $this->_previewAdded = 0;
+        $this->_initialSync = !$this->_retro && !(int) $this->_usenetStateDao->getLastUpdate(Dao_UsenetState::State_Spots);
+        if ($this->_initialSync) {
+            $this->_settings->set(Services_Retriever_Schedule::INITIAL_PENDING, true);
+        }
+        $count = parent::perform();
+        $this->_settings->remove(Services_Retriever_Schedule::INITIAL_PENDING);
+
+        return $count + $this->_previewAdded;
+    }
+
+    public function loopTillEnd($curArticleNr, $increment = 1000)
+    {
+        if ($this->_initialSync) {
+            $this->publishRecentPreview();
+        }
+
+        return parent::loopTillEnd($curArticleNr, $increment);
+    }
+
+    /** Publish verified headers quickly; details are fetched on demand when opened. */
+    private function publishRecentPreview()
+    {
+        $saved = [$this->_retrieveFull, $this->_prefetch_image, $this->_prefetch_nzb];
+        $this->_retrieveFull = $this->_prefetch_image = $this->_prefetch_nzb = false;
+        $this->_previewMode = true;
+        $this->_previewCount = 0;
+        $last = (int) $this->_msgdata['last'];
+        // Bound time spent scanning invalid, moderated or unavailable headers.
+        $first = max((int) $this->_msgdata['first'], $last - 1999);
+        $this->reportProgress(['phase' => 'running', 'stage' => 'preview', 'started' => time(),
+            'finished' => null, 'start' => $first, 'first' => $first, 'last' => $last,
+            'cur' => $first, 'processed' => 0, 'previewAvailable' => 0]);
+        try {
+            for ($end = $last; $end >= $first && $this->_previewCount < self::PREVIEW_TARGET; $end = $start - 1) {
+                $start = max($first, $end - min(25, self::PREVIEW_TARGET - $this->_previewCount) + 1);
+                $timer = microtime(true);
+                $headers = $this->_svcNntpTextPipelined->getOverview($start, $end);
+                if ($headers) {
+                    // Persist BEFORE inserting: DB IDs no longer imply article order.
+                    if (!$this->_settings->get(self::PREVIEW_ORDER)) {
+                        $this->_settings->set(self::PREVIEW_ORDER, true);
+                    }
+                    $this->process(array_reverse($headers), $start, $end, $timer);
+                }
+                $this->reportProgress(['previewAvailable' => $this->_previewCount,
+                    'processed' => $this->_previewCount]);
+            }
+        } finally {
+            [$this->_retrieveFull, $this->_prefetch_image, $this->_prefetch_nzb] = $saved;
+            $this->_previewMode = false;
+        }
+    }
+
     /**
      * @var array
      */
@@ -217,7 +281,10 @@ class Services_Retriever_Spots extends Services_Retriever_Base
          * If the server is marked as buggy, the last 'x' amount of spot are
          * always checked so we do not have to do this
          */
-        if (!$this->_textServer['buggy']) {
+        // The legacy cleanup deletes by insertion ID. With a newest-first preview
+        // that would delete older history inserted afterwards. Retention and
+        // signed moderation still remove records through their normal paths.
+        if (!$this->_textServer['buggy'] && !$this->_settings->get(self::PREVIEW_ORDER)) {
             $this->_spotDao->removeExtraSpots($highestMessageId);
         } // if
     }
@@ -394,6 +461,9 @@ class Services_Retriever_Spots extends Services_Retriever_Base
                          */
                         if (!$header_isInDb) {
                             $spotDbList[] = $spot;
+                            if ($this->_previewMode) {
+                                $this->_previewAdded++;
+                            }
 
                             /*
                              * Some buggy NNTP servers give us the same messageid
@@ -420,6 +490,10 @@ class Services_Retriever_Spots extends Services_Retriever_Base
             } // else
 
             SpotTiming::start(__CLASS__.'::'.__FUNCTION__.':forEach-getFullSpot');
+
+            if ($this->_previewMode && $header_isInDb) {
+                $this->_previewCount++;
+            }
 
             /*
              * We don't want to retrieve the fullspot if we don't have the header
@@ -676,7 +750,7 @@ class Services_Retriever_Spots extends Services_Retriever_Base
         } // switch
 
         // update the maximum article id
-        if (!empty($lastProcessedId) && ($lastProcessedArtNr > 0)) {
+        if (!$this->_previewMode && !empty($lastProcessedId) && ($lastProcessedArtNr > 0)) {
             $this->_usenetStateDao->setMaxArticleId(Dao_UsenetState::State_Spots, $lastProcessedArtNr, $lastProcessedId);
         } // if
         SpotDebug::msg(SpotDebug::DEBUG, 'loop finished, setMaxArticleId='.serialize($increment));
@@ -790,6 +864,14 @@ class Services_Retriever_Spots extends Services_Retriever_Base
      */
     public function getRecentRetrievedMessageIdList()
     {
+        if ($this->_settings->get(self::PREVIEW_ORDER)) {
+            // A preview ID must never move a resumed history scan to the tail
+            // when a provider has renumbered its articles.
+            $messageId = $this->getLastMessageId();
+
+            return $messageId ? ['<'.trim($messageId, '<>').'>' => 1] : [];
+        }
+
         return $this->_spotDao->getMaxMessageId('headers');
     }
 

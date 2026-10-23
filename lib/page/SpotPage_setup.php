@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__.'/../services/Nntp/Services_Nntp_ConnectionLimit.php';
+require_once __DIR__.'/../services/Retriever/Services_Retriever_Schedule.php';
 
 /**
  * First-run setup wizard. Only reachable while the 'onboarding_pending'
@@ -241,11 +242,15 @@ class SpotPage_setup extends SpotPage_Abs
 
         $this->_settings->set('default_theme_mode', $theme);
         $this->_settings->set(Services_Nntp_ConnectionLimit::SettingName, Services_Nntp_ConnectionLimit::normalize($maxConnections));
-        $this->_settings->remove('onboarding_pending');
 
         // Log the new user straight in
         $svcUserAuth = new Services_User_Authentication($this->_daoFactory, $this->_settings);
         $svcUserAuth->authenticate($user['username'], $user['newpassword1']);
+
+        // Let the background worker start as soon as setup is complete; never
+        // keep the browser request open for the initial history download.
+        Services_Retriever_Schedule::queueInitial($this->_settings);
+        $this->_settings->remove('onboarding_pending');
 
         return [];
     }

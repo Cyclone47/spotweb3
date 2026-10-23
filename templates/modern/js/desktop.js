@@ -177,15 +177,55 @@
     var lastFinished = null;
     var requestPending = false;
     var listLoading = false;
+    var lastSpotCount = null;
+    var latestSpotCount = 0;
+    var lastListRefresh = 0;
+    var pendingListRefresh = false;
+    var syncNotice = null, noticeMessage = null, noticeButton = null;
     text.setAttribute('role', 'status');
     text.setAttribute('aria-live', 'polite');
-    function reloadSpotList() {
+    function canAutoRefresh() {
+      var current = q('div.spots');
+      return current && !document.hidden && !location.hash &&
+        !document.body.classList.contains('spotinfo') &&
+        !current.classList.contains('sw-show-downloads') &&
+        !(window.scrollY > 100) && !(current.scrollTop > 100) &&
+        !(Number(new URLSearchParams(location.search).get('pagenr')) > 0) &&
+        !q('input[type="checkbox"]:checked', current) &&
+        !qa('.ui-dialog').some(function (dialog) { return dialog.getClientRects().length > 0; });
+    }
+    function updateNotice(d, busy) {
+      var current = q('div.spots');
+      if (!current) { return; }
+      if (!syncNotice || !syncNotice.isConnected) {
+        syncNotice = el('div', 'sw-sync-notice');
+        syncNotice.setAttribute('role', 'status');
+        syncNotice.setAttribute('aria-live', 'polite');
+        noticeMessage = el('span');
+        noticeButton = el('button', null, 'Update list');
+        noticeButton.type = 'button';
+        noticeButton.addEventListener('click', function () { reloadSpotList(latestSpotCount, false); });
+        syncNotice.appendChild(noticeMessage);
+        syncNotice.appendChild(noticeButton);
+        current.parentNode.insertBefore(syncNotice, current);
+      }
+      syncNotice.hidden = !(busy || d.initialSyncIncomplete || pendingListRefresh);
+      noticeMessage.textContent = busy
+        ? 'Sync in progress. This list may be incomplete. You can open the available spots while more are added.'
+        : (d.initialSyncIncomplete
+          ? 'The initial sync is incomplete. You can open available spots; use Refresh above to resume syncing.'
+          : 'More spots are available. Update the list when you are ready.');
+      noticeButton.hidden = !pendingListRefresh;
+    }
+    function reloadSpotList(spotCount, automatic) {
       var current = q('div.spots');
       if (!current || listLoading) { return; }
       listLoading = true;
       fetch(location.href.split('#')[0], { credentials: 'same-origin', cache: 'no-store' })
         .then(function (r) { if (!r.ok) { throw new Error('Could not refresh the spot list'); } return r.text(); })
         .then(function (html) {
+          // A spot may have been opened while the list request was in flight.
+          if (automatic && !canAutoRefresh()) { return; }
           var next = new DOMParser().parseFromString(html, 'text/html').querySelector('div.spots');
           if (!next) { throw new Error('Could not refresh the spot list'); }
           qa('script', next).forEach(function (script) { script.remove(); });
@@ -204,6 +244,9 @@
             if (window.attachInfiniteScroll) { window.attachInfiniteScroll(); }
           }
           buildTabs();
+          lastSpotCount = typeof spotCount === 'number' ? spotCount : latestSpotCount;
+          lastListRefresh = Date.now();
+          pendingListRefresh = false;
         }).catch(function (err) { text.textContent = err.message; })
         .then(function () { listLoading = false; });
     }
@@ -254,10 +297,12 @@
       }
       if (d.running || (d.schedule && d.schedule.running && d.schedule.schedulerActive)) {
         status.classList.add('is-running');
-        var t = d.types && (d.types.Spots || d.types.Comments || d.types.Reports);
+        var t = d.types && ['Spots', 'Comments', 'Reports'].map(function (name) { return d.types[name]; })
+          .filter(function (type) { return type && type.running; })[0];
         var pct = t ? t.percent : 0;
         if (!t || !pct) { prog.classList.add('indeterminate'); bar.style.width = ''; } else { bar.style.width = pct + '%'; }
-        text.textContent = ML('syncing', 'Syncing') + (pct ? ' ' + pct + '%' : '...') + ' \u00B7 ' + fmt(d.spots) + ' ' + spots;
+        text.textContent = (t && t.stage === 'preview' ? 'Loading recent spots' : ML('syncing', 'Syncing')) +
+          (pct ? ' ' + pct + '%' : '...') + ' \u00B7 ' + fmt(d.spots) + ' ' + spots;
       } else {
         status.classList.add('is-idle');
         bar.style.width = '0';
@@ -273,10 +318,23 @@
           if (!d) { schedule(30000); return; }
           M.syncToken = d.syncToken || null;
           render(d);
-          var finished = d.schedule && d.schedule.finished || d.last;
-          if (lastFinished !== null && finished > lastFinished) { reloadSpotList(); }
-          lastFinished = Math.max(lastFinished || 0, finished || 0);
+          latestSpotCount = Number(d.spots) || 0;
           var busy = d.running || (d.schedule && d.schedule.schedulerActive && (d.schedule.queued || d.schedule.running));
+          if (lastSpotCount === null) {
+            lastSpotCount = latestSpotCount;
+            // The first run can finish between rendering an empty overview and
+            // receiving this first status response. Load those spots as well.
+            if (latestSpotCount > 0 && (busy || (q('div.spots') && !q('a.spotlink', q('div.spots'))))) {
+              pendingListRefresh = true;
+            }
+          } else if (lastSpotCount !== latestSpotCount) { pendingListRefresh = true; }
+          var finished = d.schedule && d.schedule.finished || d.last;
+          if (lastFinished !== null && finished > lastFinished) { pendingListRefresh = true; }
+          lastFinished = Math.max(lastFinished || 0, finished || 0);
+          if (pendingListRefresh && canAutoRefresh() && Date.now() - lastListRefresh >= 5000) {
+            reloadSpotList(latestSpotCount, true);
+          }
+          updateNotice(d, busy);
           refresh.classList.toggle('spinning', !!busy);
           schedule(busy ? 2000 : 20000);
         })

@@ -134,6 +134,9 @@
 
   /* ------------------------------------------------------------ main area */
   body.sw-desktop div.spots { margin: 6px 6px 6px 258px; padding: 0; background: transparent; min-width: 0; }
+  body.sw-desktop .sw-sync-notice { margin: 8px 6px 6px 258px; padding: 10px 14px; border: 1px solid var(--sw-border); border-radius: 4px; background: var(--sw-surface); color: var(--sw-text); font-size: 13px; }
+  body.sw-desktop .sw-sync-notice[hidden] { display: none; }
+  body.sw-desktop .sw-sync-notice button { margin-left: 12px; cursor: pointer; }
   body.sw-desktop .sw-tabs { display: flex; gap: 2px; height: 26px; margin: 0; padding: 0 0 0 4px; }
   body.sw-desktop .sw-tab {
     display: inline-flex; align-items: center; padding: 0 12px; border: 1px solid var(--sw-border); border-bottom: 0; border-radius: 3px 3px 0 0;

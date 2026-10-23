@@ -15,7 +15,7 @@ try {
     $state['heartbeat'] = time();
     $state['running'] = false;
     $request = $settings->exists(Services_Retriever_Schedule::REQUEST) ? $settings->get(Services_Retriever_Schedule::REQUEST) : '';
-    $due = Services_Retriever_Schedule::due(Services_Retriever_Schedule::interval($settings), $state, $request, time());
+    $due = Services_Retriever_Schedule::due(Services_Retriever_Schedule::interval($settings), $state, $request, time(), (bool) $settings->get('onboarding_pending'));
     Services_Retriever_Schedule::write($dao, $state);
     if (!$due) exit;
     $server = $settings->get('nntp_hdr');

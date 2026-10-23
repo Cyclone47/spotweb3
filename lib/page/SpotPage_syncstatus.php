@@ -59,6 +59,7 @@ class SpotPage_syncstatus extends SpotPage_Abs
 
         // file side: detailed progress of the current / last run
         $progress = Services_Retriever_Progress::read($this->_daoFactory);
+        $schedule = Services_Retriever_Schedule::status($this->_daoFactory, $this->_settings);
         $types = [];
         $running = false;
         foreach ($progress as $type => $p) {
@@ -72,6 +73,8 @@ class SpotPage_syncstatus extends SpotPage_Abs
                 'running'   => $isRunning,
                 'percent'   => $pct,
                 'processed' => (int) (isset($p['processed']) ? $p['processed'] : 0),
+                'stage' => $p['stage'] ?? 'history',
+                'previewAvailable' => (int) ($p['previewAvailable'] ?? 0),
                 'started'   => isset($p['started']) ? (int) $p['started'] : null,
                 'finished'  => isset($p['finished']) ? (int) $p['finished'] : null,
             ];
@@ -87,6 +90,22 @@ class SpotPage_syncstatus extends SpotPage_Abs
             } // foreach
         } // if
 
+        // A failed worker can leave a recent progress file behind. Do not keep
+        // advertising an active sync after the scheduler has recorded its failure.
+        if (!empty($schedule['error']) && empty($schedule['running'])) {
+            $latestProgress = 0;
+            foreach ($progress as $p) {
+                $latestProgress = max($latestProgress, (int) ($p['updated'] ?? 0));
+            }
+            if ((int) ($schedule['finished'] ?? 0) >= $latestProgress) {
+                $running = false;
+                foreach ($types as &$type) {
+                    $type['running'] = false;
+                }
+                unset($type);
+            }
+        }
+
         $spots = (int) $conn->singleQuery('SELECT COUNT(1) FROM spots');
 
         $this->sendExpireHeaders(true);
@@ -96,9 +115,10 @@ class SpotPage_syncstatus extends SpotPage_Abs
             'running'    => $running,
             'last'       => isset($state['Spots']) ? $state['Spots']['lastretrieved'] : 0,
             'spots'      => $spots,
+            'initialSyncIncomplete' => (bool) $this->_settings->get(Services_Retriever_Schedule::INITIAL_PENDING),
             'types'      => $types,
             'now'        => $now,
-            'schedule'   => Services_Retriever_Schedule::status($this->_daoFactory, $this->_settings),
+            'schedule'   => $schedule,
             'syncToken'  => $this->_spotSec->allowed(SpotSecurity::spotsec_retrieve_spots, '') ? SpotReq::generateXsrfCookie('syncform') : null,
         ]);
     }

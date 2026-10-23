@@ -281,7 +281,7 @@
       <!-- Step 6: review -->
       <section class="step" data-step="6">
         <h1>Finish</h1>
-        <p class="lead">Review your choices, then finish the setup.</p>
+        <p class="lead">Review your choices, then finish the setup. With a Usenet server configured, your first sync starts automatically. Recent spots appear first so you can browse while the history loads.</p>
         <dl class="summary" id="summary"></dl>
       </section>
     </div>

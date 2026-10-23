@@ -28,6 +28,15 @@ configuration and cache live in the persistent `spotweb-data` volume at `/data`.
 The relay and retrieval scheduler start automatically. Choose the retrieval
 interval in **Admin Center → Overview → Automatic spot retrieval**.
 
+Completing setup with a configured Usenet server queues the first sync immediately
+(the background scheduler checks every five seconds), even in manual-only mode.
+The first run publishes up to 200 recent, verified spot headers in small batches
+before indexing older history. Available spots can be opened immediately; full
+details are fetched on demand. The desktop overview updates during retrieval and
+shows an incomplete-list notice. Automatic refresh pauses while a spot is open,
+the list is scrolled, or rows are selected; **Update list** remains available.
+An interrupted initial sync keeps its history checkpoint and incomplete notice.
+
 HTTPS is published on host port **443**. When using a LAN IP, the setup wizard
 offers a switch to HTTPS before entering credentials, explains the local
 certificate warning and checks browser download support. Its certificate help

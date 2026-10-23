@@ -43,6 +43,10 @@ jobs:
         run: bash tests/proxmox-quick-install.test.sh
       - name: Check HTTPS onboarding URLs
         run: node tests/js/setup-https.test.js
+      - name: Check live sync previews
+        run: node tests/js/sync-preview.test.js
+      - name: Check setup automatically starts the first sync
+        run: python3 tests/integration/onboarding-first-sync.py http://localhost:8080
 
   native-debian-install:
     runs-on: ubuntu-latest
