@@ -101,7 +101,9 @@ try {
         throw new RetrieverRunningException();
     } // if
 
+    $runSucceeded = false;
     try {
+        Services_Retriever_Progress::startRun($daoFactory);
         $daoFactory->getUsenetStateDao()->initialize();
         $daoFactory->getUsenetStateDao()->setRetrieverRunning(true);
 
@@ -115,6 +117,7 @@ try {
          * display the spots, so we delete nzb's, images, comments, etc.
          */
         if (($settings->get('retention') > 0) && (!$retroMode)) {
+            Services_Retriever_Progress::stage($daoFactory, 'retention');
             echo 'Removing Spot information which is beyond retention period,';
 
             $spotDao = $daoFactory->getSpotDao();
@@ -146,6 +149,7 @@ try {
         /*
          * Actually retrieve spots from the server
          */
+        Services_Retriever_Progress::stage($daoFactory, 'spots');
         $retriever = new Services_Retriever_Spots(
             $daoFactory,
             $settings,
@@ -162,6 +166,7 @@ try {
 
         //# Creating filter counts
         if ($newSpotCount > 0) {
+            Services_Retriever_Progress::stage($daoFactory, 'counts');
             $svcPrv_cacheSpotCount = new Services_Actions_CacheNewSpotCount(
                 $daoFactory->getUserFilterCountDao(),
                 $daoFactory->getUserFilterDao(),
@@ -183,6 +188,7 @@ try {
          * Should we retrieve comments?
          */
         if ($settings->get('retrieve_comments')) {
+            Services_Retriever_Progress::stage($daoFactory, 'comments');
             $retriever = new Services_Retriever_Comments(
                 $daoFactory,
                 $settings,
@@ -202,6 +208,7 @@ try {
          * Retrieval of reports
          */
         if ($settings->get('retrieve_reports') && !$retroMode) {
+            Services_Retriever_Progress::stage($daoFactory, 'reports');
             $retriever = new Services_Retriever_Reports(
                 $daoFactory,
                 $settings,
@@ -220,9 +227,11 @@ try {
         /*
          * SpotStateList cleanup
          */
+        Services_Retriever_Progress::stage($daoFactory, 'cleanup');
         $daoFactory->getSpotStateListDao()->cleanSpotStateList();
 
         try {
+            Services_Retriever_Progress::stage($daoFactory, 'blocklists');
             if ($settings->get('external_blacklist') || $settings->get('external_whitelist')) {
                 $svcBwListRetriever = new Services_BWList_Retriever($daoFactory->getBlackWhiteListDao(), $daoFactory->getCacheDao());
             }
@@ -252,6 +261,7 @@ try {
 
         //# Statistics
         if ($settings->get('prepare_statistics') && $newSpotCount > 0) {
+            Services_Retriever_Progress::stage($daoFactory, 'statistics');
             if (extension_loaded('gd') || extension_loaded('gd2')) {
                 $settings_nntp_hdr = $settings->get('nntp_hdr');
                 $svcPrv_Stats = new Services_Providers_Statistics(
@@ -270,6 +280,7 @@ try {
         } // if
 
         // Verstuur notificaties
+        Services_Retriever_Progress::stage($daoFactory, 'notifications');
         $spotsNotifications = new SpotNotifications($daoFactory, $settings, $userSession);
         if (!empty($notifyNewArray)) {
             foreach ($notifyNewArray as $userId => $newSpotInfo) {
@@ -281,7 +292,9 @@ try {
             } // foreach
         } // if
         $spotsNotifications->sendRetrieverFinished($newSpotCount, $newCommentCount, $newReportCount);
+        $runSucceeded = true;
     } finally {
+        Services_Retriever_Progress::finishRun($daoFactory, $runSucceeded);
         if ($retrieveLock->isAcquired()) {
             try {
                 $daoFactory->getUsenetStateDao()->setRetrieverRunning(false);

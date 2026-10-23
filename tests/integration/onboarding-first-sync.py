@@ -34,3 +34,16 @@ while time.time() - started < 30:
     time.sleep(1)
 else:
     raise AssertionError('Background scheduler did not start the initial request')
+
+# The deliberately unavailable provider must fail cleanly rather than leave a spinner.
+while time.time() - started < 40:
+    status = json.load(browser.open(base + '/?page=syncstatus', timeout=10))
+    if status['schedule'].get('finished', 0) >= int(started):
+        assert status['schedule'].get('error'), 'Unavailable provider must produce a worker error'
+        assert status['run']['phase'] == 'error', 'Whole-run failure was not recorded'
+        assert not status['running'], 'Failed worker still reported as syncing'
+        print('PASS unavailable provider records an error and clears the active sync status')
+        break
+    time.sleep(1)
+else:
+    raise AssertionError('Unavailable provider did not finish with an error')

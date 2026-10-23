@@ -184,6 +184,10 @@
     var syncNotice = null, noticeMessage = null, noticeButton = null;
     text.setAttribute('role', 'status');
     text.setAttribute('aria-live', 'polite');
+    function syncBusy(d) {
+      if (d.run && ['done', 'error', 'stalled'].indexOf(d.run.phase) !== -1 && !(d.schedule && d.schedule.queued)) { return false; }
+      return !!(d.running || (d.schedule && d.schedule.schedulerActive && (d.schedule.queued || d.schedule.running)));
+    }
     function canAutoRefresh() {
       var current = q('div.spots');
       return current && !document.hidden && !location.hash &&
@@ -287,6 +291,11 @@
       }
       text.href = '#';
       var spots = ML('spotsn', 'spots');
+      if (d.run && d.run.phase === 'stalled' && !(d.schedule && d.schedule.queued)) {
+        text.textContent = 'Sync stopped responding. Check the retrieval log.';
+        bar.style.width = '0';
+        return;
+      }
       if (d.schedule && d.schedule.error && !d.running && !d.schedule.queued) {
         text.textContent = d.schedule.error;
         return;
@@ -295,13 +304,24 @@
         text.textContent = 'Waiting to check for new spots…';
         return;
       }
-      if (d.running || (d.schedule && d.schedule.running && d.schedule.schedulerActive)) {
+      if (d.run && d.run.phase === 'error') {
+        text.textContent = 'Sync failed. Check the retrieval log.';
+        bar.style.width = '0';
+        return;
+      }
+      if (syncBusy(d)) {
         status.classList.add('is-running');
-        var t = d.types && ['Spots', 'Comments', 'Reports'].map(function (name) { return d.types[name]; })
-          .filter(function (type) { return type && type.running; })[0];
-        var pct = t ? t.percent : 0;
-        if (!t || !pct) { prog.classList.add('indeterminate'); bar.style.width = ''; } else { bar.style.width = pct + '%'; }
-        text.textContent = (t && t.stage === 'preview' ? 'Loading recent spots' : ML('syncing', 'Syncing')) +
+        var active = d.types && ['Spots', 'Comments', 'Reports'].map(function (name) { return { name: name, data: d.types[name] }; })
+          .filter(function (type) { return type.data && type.data.running; })[0];
+        var stage = d.run && d.run.phase === 'running' ? d.run.stage : (active ? active.name.toLowerCase() : 'finishing');
+        var stream = active && active.name.toLowerCase() === stage;
+        var pct = stream ? Math.min(99, active.data.percent) : 0;
+        var labels = { starting: 'Starting sync', retention: 'Cleaning old spots', spots: 'Syncing spots',
+          counts: 'Updating spot counts', comments: 'Syncing comments', reports: 'Syncing reports',
+          cleanup: 'Finishing sync', blocklists: 'Updating blocklists', statistics: 'Updating statistics',
+          notifications: 'Sending notifications', finishing: 'Finishing sync' };
+        if (!pct) { prog.classList.add('indeterminate'); bar.style.width = ''; } else { bar.style.width = pct + '%'; }
+        text.textContent = (active && active.data.stage === 'preview' && stage === 'spots' ? 'Loading recent spots' : (labels[stage] || ML('syncing', 'Syncing'))) +
           (pct ? ' ' + pct + '%' : '...') + ' \u00B7 ' + fmt(d.spots) + ' ' + spots;
       } else {
         status.classList.add('is-idle');
@@ -319,7 +339,7 @@
           M.syncToken = d.syncToken || null;
           render(d);
           latestSpotCount = Number(d.spots) || 0;
-          var busy = d.running || (d.schedule && d.schedule.schedulerActive && (d.schedule.queued || d.schedule.running));
+          var busy = syncBusy(d);
           if (lastSpotCount === null) {
             lastSpotCount = latestSpotCount;
             // The first run can finish between rendering an empty overview and

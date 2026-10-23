@@ -45,6 +45,7 @@ jobs:
         if: matrix.php-version == '8.3'
         run: |
           vendor/bin/phpunit --no-configuration --bootstrap vendor/autoload.php --do-not-cache-result tests/Services/Retriever/ServicesRetrieverInitialSyncTest.php
+          vendor/bin/phpunit --no-configuration --bootstrap vendor/autoload.php --do-not-cache-result tests/Services/Retriever/ServicesRetrieverStatusTest.php
           php tests/integration/retrieval-schedule.php
 
       - name: Configure PHPCompatibility

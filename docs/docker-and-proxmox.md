@@ -36,6 +36,10 @@ details are fetched on demand. The desktop overview updates during retrieval and
 shows an incomplete-list notice. Automatic refresh pauses while a spot is open,
 the list is scrolled, or rows are selected; **Update list** remains available.
 An interrupted initial sync keeps its history checkpoint and incomplete notice.
+The sync indicator names the current stage (spots, comments, reports, spot counts
+or final processing). A stream reaching 100% does not mark the entire run done.
+Worker completion/failure clears the spinner; a worker that loses its heartbeat
+is reported as unresponsive rather than remaining at 100% indefinitely.
 
 HTTPS is published on host port **443**. When using a LAN IP, the setup wizard
 offers a switch to HTTPS before entering credentials, explains the local

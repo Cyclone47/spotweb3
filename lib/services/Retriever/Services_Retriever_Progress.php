@@ -10,6 +10,23 @@ class Services_Retriever_Progress
 {
     const FILE = 'retriever-progress.json';
 
+    public static function startRun(Dao_Factory $daoFactory)
+    {
+        self::update($daoFactory, 'Run', ['phase' => 'running', 'stage' => 'starting',
+            'started' => time(), 'finished' => null]);
+    }
+
+    public static function stage(Dao_Factory $daoFactory, $stage)
+    {
+        self::update($daoFactory, 'Run', ['phase' => 'running', 'stage' => $stage]);
+    }
+
+    public static function finishRun(Dao_Factory $daoFactory, $success)
+    {
+        self::update($daoFactory, 'Run', ['phase' => $success ? 'done' : 'error',
+            'stage' => $success ? 'done' : 'error', 'finished' => time()]);
+    }
+
     private static function path(Dao_Factory $daoFactory)
     {
         return rtrim($daoFactory->getCachePath(), '/\\').'/'.self::FILE;

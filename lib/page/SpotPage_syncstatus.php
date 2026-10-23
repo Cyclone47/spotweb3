@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__.'/../services/Retriever/Services_Retriever_Schedule.php';
+require_once __DIR__.'/../services/Retriever/Services_Retriever_Status.php';
 
 /**
  * JSON status of the spot retriever, polled by the menu bar sync indicator.
@@ -60,51 +61,7 @@ class SpotPage_syncstatus extends SpotPage_Abs
         // file side: detailed progress of the current / last run
         $progress = Services_Retriever_Progress::read($this->_daoFactory);
         $schedule = Services_Retriever_Schedule::status($this->_daoFactory, $this->_settings);
-        $types = [];
-        $running = false;
-        foreach ($progress as $type => $p) {
-            $isRunning = (isset($p['phase']) && $p['phase'] === 'running') && (($now - (int) $p['updated']) < 180);
-            $total = max(0, (int) $p['last'] - (int) $p['start']);
-            $pct = $total > 0 ? (int) min(100, max(0, round(((int) $p['cur'] - (int) $p['start']) / $total * 100))) : 0;
-            if (isset($p['phase']) && $p['phase'] === 'done') {
-                $pct = 100;
-            } // if
-            $types[$type] = [
-                'running'   => $isRunning,
-                'percent'   => $pct,
-                'processed' => (int) (isset($p['processed']) ? $p['processed'] : 0),
-                'stage' => $p['stage'] ?? 'history',
-                'previewAvailable' => (int) ($p['previewAvailable'] ?? 0),
-                'started'   => isset($p['started']) ? (int) $p['started'] : null,
-                'finished'  => isset($p['finished']) ? (int) $p['finished'] : null,
-            ];
-            $running = $running || $isRunning;
-        } // foreach
-
-        // a run without progress information (older retriever, other host) still counts as running
-        if (!$running) {
-            foreach ($state as $s) {
-                if ($s['nowrunning'] > 0 && ($now - $s['nowrunning']) < 300) {
-                    $running = true;
-                } // if
-            } // foreach
-        } // if
-
-        // A failed worker can leave a recent progress file behind. Do not keep
-        // advertising an active sync after the scheduler has recorded its failure.
-        if (!empty($schedule['error']) && empty($schedule['running'])) {
-            $latestProgress = 0;
-            foreach ($progress as $p) {
-                $latestProgress = max($latestProgress, (int) ($p['updated'] ?? 0));
-            }
-            if ((int) ($schedule['finished'] ?? 0) >= $latestProgress) {
-                $running = false;
-                foreach ($types as &$type) {
-                    $type['running'] = false;
-                }
-                unset($type);
-            }
-        }
+        $summary = Services_Retriever_Status::summarize($progress, $state, $schedule, $now);
 
         $spots = (int) $conn->singleQuery('SELECT COUNT(1) FROM spots');
 
@@ -112,11 +69,12 @@ class SpotPage_syncstatus extends SpotPage_Abs
         $this->sendContentTypeHeader('json');
         echo json_encode([
             'configured' => $configured,
-            'running'    => $running,
+            'running'    => $summary['running'],
             'last'       => isset($state['Spots']) ? $state['Spots']['lastretrieved'] : 0,
             'spots'      => $spots,
             'initialSyncIncomplete' => (bool) $this->_settings->get(Services_Retriever_Schedule::INITIAL_PENDING),
-            'types'      => $types,
+            'types'      => $summary['types'],
+            'run'        => $summary['run'],
             'now'        => $now,
             'schedule'   => $schedule,
             'syncToken'  => $this->_spotSec->allowed(SpotSecurity::spotsec_retrieve_spots, '') ? SpotReq::generateXsrfCookie('syncform') : null,
