@@ -1,0 +1,175 @@
+/*
+ * SVG icons replacing the legacy sprite.png glyphs. Each icon is a mask painted
+ * with currentColor, so it follows the theme and the state colours below.
+ */
+:root {
+  --ico-download: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 20h16'/%3E%3C/svg%3E");
+  --ico-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z'/%3E%3C/svg%3E");
+  --ico-star-fill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z'/%3E%3C/svg%3E");
+  --ico-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+  --ico-flag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V4m0 0h12l-2.5 4L17 12H5'/%3E%3C/svg%3E");
+  --ico-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  --ico-x: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 6l12 12M18 6 6 18'/%3E%3C/svg%3E");
+  --ico-shield: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
+  --ico-filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 5h18l-7 8.5V20l-4-2v-4.5z'/%3E%3C/svg%3E");
+  --ico-spinner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 3a9 9 0 1 0 9 9'/%3E%3C/svg%3E");
+}
+
+/* shared icon glyph: a ::before mask painted with currentColor on top of a transparent round button */
+body.modern-theme a.sabnzbd-button,
+body.modern-theme a.spamreport-button,
+body.modern-theme div.details table.spotheader th.watch a,
+body.modern-theme div.details table.spotheader th.search a,
+body.modern-theme table.spots tr td.watch a,
+body.modern-theme div.details table.spotinfo a.delete,
+body.modern-theme div.details table.spotinfo a.whitelist,
+body.modern-theme div.details table.spotinfo a.addtagasfilter,
+body.modern-theme div.details table.spotinfo a.addspotterasfilter,
+body.modern-theme div.details div.comments li a.delete,
+body.modern-theme div.details div.comments li a.whitelist {
+  position: relative;
+  display: inline-block !important;
+  flex: none;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  border: 1px solid var(--sw-border) !important;
+  border-radius: 50%;
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--sw-muted);
+  font-size: 0 !important;
+  line-height: 0 !important;
+  cursor: pointer;
+  vertical-align: middle;
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+}
+body.modern-theme a.sabnzbd-button::before,
+body.modern-theme a.spamreport-button::before,
+body.modern-theme div.details table.spotheader th.watch a::before,
+body.modern-theme div.details table.spotheader th.search a::before,
+body.modern-theme table.spots tr td.watch a::before,
+body.modern-theme div.details table.spotinfo a.delete::before,
+body.modern-theme div.details table.spotinfo a.whitelist::before,
+body.modern-theme div.details table.spotinfo a.addtagasfilter::before,
+body.modern-theme div.details table.spotinfo a.addspotterasfilter::before,
+body.modern-theme div.details div.comments li a.delete::before,
+body.modern-theme div.details div.comments li a.whitelist::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  -webkit-mask: var(--sw-ico, var(--ico-download)) center / 17px 17px no-repeat;
+  mask: var(--sw-ico, var(--ico-download)) center / 17px 17px no-repeat;
+}
+body.modern-theme a.sabnzbd-button:hover,
+body.modern-theme a.spamreport-button:hover,
+body.modern-theme div.details table.spotheader th.watch a:hover,
+body.modern-theme div.details table.spotheader th.search a:hover { background: var(--sw-surface-2) !important; }
+
+/* download client (SABnzbd, NZBGet, ...) */
+body.modern-theme a.sabnzbd-button { --sw-ico: var(--ico-download); color: var(--sw-accent); }
+body.modern-theme a.sabnzbd-button.succes { --sw-ico: var(--ico-check); color: var(--sw-ok); }
+body.modern-theme a.sabnzbd-button.failure { --sw-ico: var(--ico-x); color: #dc2626; }
+body.modern-theme a.sabnzbd-button.unconfigured { color: var(--sw-muted); opacity: 0.6; filter: none; }
+body.modern-theme a.sabnzbd-button.loading::before { --sw-ico: var(--ico-spinner); animation: sw-spin 0.8s linear infinite; }
+@keyframes sw-spin { to { transform: rotate(360deg); } }
+
+/* watchlist */
+body.modern-theme div.details table.spotheader th.watch a.add,
+body.modern-theme table.spots tr td.watch a.add { --sw-ico: var(--ico-star); }
+body.modern-theme div.details table.spotheader th.watch a.remove,
+body.modern-theme table.spots tr td.watch a.remove { --sw-ico: var(--ico-star-fill); color: #f59e0b; }
+body.modern-theme div.details form.postcommentform dd.rating span { background: currentColor !important; -webkit-mask: var(--ico-star-fill) center / 16px no-repeat; mask: var(--ico-star-fill) center / 16px no-repeat; color: var(--sw-border); }
+
+/* search engine, spam report */
+body.modern-theme div.details table.spotheader th.search a { --sw-ico: var(--ico-search); }
+body.modern-theme a.spamreport-button { --sw-ico: var(--ico-flag); }
+body.modern-theme a.spamreport-button.success { --sw-ico: var(--ico-check); color: var(--sw-ok); }
+
+/* small inline actions next to sender / tag / comments */
+body.modern-theme div.details table.spotinfo a.delete,
+body.modern-theme div.details table.spotinfo a.whitelist,
+body.modern-theme div.details table.spotinfo a.addtagasfilter,
+body.modern-theme div.details table.spotinfo a.addspotterasfilter,
+body.modern-theme div.details div.comments li a.delete,
+body.modern-theme div.details div.comments li a.whitelist { width: 26px !important; height: 26px !important; margin-left: 6px !important; border-color: transparent !important; }
+body.modern-theme div.details table.spotinfo a.delete,
+body.modern-theme div.details div.comments li a.delete { --sw-ico: var(--ico-x); }
+body.modern-theme div.details table.spotinfo a.whitelist,
+body.modern-theme div.details div.comments li a.whitelist { --sw-ico: var(--ico-shield); }
+body.modern-theme div.details table.spotinfo a.addtagasfilter,
+body.modern-theme div.details table.spotinfo a.addspotterasfilter { --sw-ico: var(--ico-filter); }
+body.modern-theme div.details table.spotinfo a.delete:hover,
+body.modern-theme div.details div.comments li a.delete:hover { color: #dc2626; background: rgba(220, 38, 38, 0.1) !important; }
+body.modern-theme div.details table.spotinfo a.whitelist:hover,
+body.modern-theme div.details div.comments li a.whitelist:hover { color: var(--sw-ok); background: rgba(22, 163, 74, 0.1) !important; }
+
+/* cards: compact round download button and star */
+body.modern-theme .spotCard .actions a.sabnzbd-button { width: 30px !important; height: 30px !important; }
+body.modern-theme .spotCard .watch a { width: 24px; height: 24px; font-size: 18px; }
+body.modern-theme .spotCard .watch a.add { color: var(--sw-muted); }
+body.modern-theme .spotCard .watch a.add:hover, body.modern-theme .spotCard .watch a.remove { color: #f59e0b; }
+
+/* toolbar buttons (config, account, add spot) */
+:root {
+  --ico-gear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'/%3E%3C/svg%3E");
+  --ico-user: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c0-4 3.6-7 8-7s8 3 8 7'/%3E%3C/svg%3E");
+  --ico-plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E");
+}
+body.modern-theme div#toolbar .toolbarButton.config p a,
+body.modern-theme div#toolbar .toolbarButton.logininfo p a,
+body.modern-theme div#toolbar .toolbarButton.addspot p a { background: none !important; background-image: none !important; }
+body.modern-theme div#toolbar .toolbarButton.config p a::before,
+body.modern-theme div#toolbar .toolbarButton.logininfo p a::before,
+body.modern-theme div#toolbar .toolbarButton.addspot p a::before {
+  content: "" !important; display: inline-block; width: 16px; height: 16px; flex: none; font-size: 0; color: inherit;
+  background: currentColor; -webkit-mask: var(--sw-tb-ico) center / contain no-repeat; mask: var(--sw-tb-ico) center / contain no-repeat;
+}
+body.modern-theme div#toolbar .toolbarButton.config p a::before { --sw-tb-ico: var(--ico-gear); }
+body.modern-theme div#toolbar .toolbarButton.logininfo p a::before { --sw-tb-ico: var(--ico-user); }
+body.modern-theme div#toolbar .toolbarButton.addspot p a::before { --sw-tb-ico: var(--ico-plus); color: var(--sw-ok); }
+
+/* the watchlist toggle hides one of its two links with an inline style; keep that working */
+body.modern-theme a[style*="display: none"],
+body.modern-theme a[style*="display:none"] { display: none !important; }
+body.modern-theme div.details table.spotheader th.watch a[style*="none"],
+body.modern-theme table.spots tr td.watch a[style*="none"],
+body.modern-theme .spotCard .watch a[style*="none"] { display: none !important; }
+
+/* jQuery UI dialog close button and other small ui-icon glyphs */
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close { width: 32px; height: 32px; top: 14px !important; right: 16px !important; margin: 0 !important; padding: 0 !important; position: absolute; }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close .ui-icon { position: absolute; inset: 0; margin: 0 !important; width: auto; height: auto; background: var(--sw-muted) !important; text-indent: -9999px; overflow: hidden; -webkit-mask: var(--ico-x) center / 14px 14px no-repeat; mask: var(--ico-x) center / 14px 14px no-repeat; }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close:hover .ui-icon { background: var(--sw-text) !important; }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close span.ui-button-text { display: none; }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close .ui-icon { left: 0 !important; top: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; margin: 0 !important; }
+body.modern-theme .ui-dialog form fieldset { border: 0 !important; background: none !important; }
+/* simpler, robust close glyph */
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close .ui-icon { display: none !important; }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close::before { content: "\00D7"; display: block; text-align: center; font-size: 24px; line-height: 30px; color: var(--sw-muted); }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close:hover::before { color: var(--sw-text); }
+body.modern-theme .ui-dialog form { background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close { text-decoration: none !important; border: 0 !important; background: var(--sw-surface-2) !important; }
+
+/* spot detail: copy / link / website actions */
+:root {
+  --ico-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='9' width='11' height='11' rx='2'/%3E%3Cpath d='M5 15V6a2 2 0 0 1 2-2h9'/%3E%3C/svg%3E");
+  --ico-text: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 6h14M5 11h14M5 16h9'/%3E%3C/svg%3E");
+  --ico-link: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1'/%3E%3C/svg%3E");
+  --ico-globe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'/%3E%3C/svg%3E");
+}
+body.modern-theme div.details table.spotheader th.copy { display: flex; gap: 6px; }
+body.modern-theme div.details table.spotheader th.copy a {
+  position: relative; display: inline-block; width: 34px; height: 34px; border: 1px solid var(--sw-border); border-radius: 50%; color: var(--sw-muted); cursor: pointer; font-size: 0; text-decoration: none;
+}
+body.modern-theme div.details table.spotheader th.copy a::before { content: ""; position: absolute; inset: 0; background: currentColor; -webkit-mask: var(--sw-ico) center / 17px no-repeat; mask: var(--sw-ico) center / 17px no-repeat; }
+body.modern-theme div.details table.spotheader th.copy a[data-copy="title"] { --sw-ico: var(--ico-copy); }
+body.modern-theme div.details table.spotheader th.copy a[data-copy="desc"] { --sw-ico: var(--ico-text); }
+body.modern-theme div.details table.spotheader th.copy a[data-copy="link"] { --sw-ico: var(--ico-link); }
+body.modern-theme div.details table.spotheader th.copy a.webopen { --sw-ico: var(--ico-globe); }
+body.modern-theme div.details table.spotheader th.copy a:hover { background: var(--sw-surface-2); color: var(--sw-accent); }
+body.modern-theme div.details table.spotheader th.copy a.copied { color: var(--sw-ok); border-color: var(--sw-ok); }

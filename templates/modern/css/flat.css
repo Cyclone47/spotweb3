@@ -1,0 +1,51 @@
+/*
+ * Flat, professional finish: small radii, no pill buttons, no soft drop shadows, no gradients.
+ * Loaded last so it wins over the earlier redesign layers.
+ */
+:root { --sw-radius: 6px; --sw-radius-sm: 4px; --sw-shadow: none; }
+
+.sw-bottomnav button span.ico svg { width: 22px; height: 22px; display: block; margin: 0 auto; }
+.sw-bottomnav button span.ico { font-size: 0; }
+
+body.modern-theme .spotCard { border-radius: 6px; box-shadow: none; transition: border-color .12s; }
+body.modern-theme .spotCard:hover { transform: none; box-shadow: none; border-color: var(--sw-accent); }
+body.modern-theme .spotCard.new { box-shadow: none; border-left: 3px solid var(--sw-ok); }
+body.modern-theme .spotCard .thumb { background: var(--sw-surface-2); }
+body.modern-theme .spotCard .badge { border-radius: 3px; box-shadow: none; }
+body.modern-theme .spotCard .actions a.nzb { border-radius: 4px; }
+body.modern-theme .cardsPager a, body.modern-theme .cardsEmptyState { border-radius: 4px; }
+
+body.modern-theme div#toolbar .toolbarButton p { border-radius: 4px; }
+body.modern-theme div#toolbar form#filterform .search { border-radius: 4px; }
+body.modern-theme div#toolbar form#filterform .search input.filtersubmit { border-radius: 3px; }
+body.modern-theme div#toolbar .toolbarButton.dropdown ul ul { border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .22); }
+body.modern-theme .sw-bottomnav button { border-radius: 4px; }
+
+body.modern-theme div.details { border-radius: 6px; box-shadow: none; }
+body.modern-theme div.details table.spotheader th.category span { border-radius: 3px; }
+body.modern-theme div.details table.spotheader th.nzb a.nzb { border-radius: 4px; }
+body.modern-theme div.details table.spotheader th.back a, body.modern-theme div.details table.spotheader th.copy a,
+body.modern-theme a.sabnzbd-button, body.modern-theme a.spamreport-button,
+body.modern-theme div.details table.spotheader th.watch a, body.modern-theme div.details table.spotheader th.search a { border-radius: 4px; }
+body.modern-theme div.details div.description pre { border-radius: 4px; }
+
+body.modern-theme .ui-dialog { border-radius: 6px !important; box-shadow: 0 10px 30px rgba(0, 0, 0, .3) !important; }
+body.modern-theme .ui-dialog .ui-dialog-titlebar-close { border-radius: 4px !important; }
+body.modern-theme .ui-dialog .greyButton, body.modern-theme .ui-dialog input[type=submit] { border-radius: 4px; }
+
+body.modern-config form.editsettingsform, body.modern-config form.edituserprefsform, body.modern-config #usermanagementtabs { border-radius: 6px; box-shadow: none; }
+body.modern-config .ui-tabs ul.ui-tabs-nav li a { border-radius: 4px; }
+body.modern-config .greyButton, body.modern-config input[type=submit], body.modern-config button:not([data-nav]) { border-radius: 4px; }
+body.modern-config .ui-tabs-panel input[type=text], body.modern-config .ui-tabs-panel select, body.modern-config .ui-tabs-panel textarea { border-radius: 4px; }
+
+.admin-center, .admin-card, .admin-msg { border-radius: 4px !important; box-shadow: none !important; }
+.admin-tabs a { border-radius: 0; }
+body.modern-config .admin-task button { border-radius: 4px; }
+
+/* phones / narrow windows: the logo in front of the product name */
+body.modern-theme:not(.sw-desktop) div#toolbar::before { padding-left: 30px; background: url(../img/spotnet-icon-64.png) no-repeat left center / 22px 22px; }
+
+/* seamless navigation: dim the list and show a thin progress line while it loads */
+body.sw-navigating div.spots { opacity: .55; transition: opacity .15s ease; pointer-events: none; }
+body.sw-navigating::before { content: ""; position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 5000; background: var(--sw-accent); transform-origin: left; animation: sw-navbar 1s ease-in-out infinite; }
+@keyframes sw-navbar { 0% { transform: scaleX(0); } 70% { transform: scaleX(.85); } 100% { transform: scaleX(.95); opacity: .4; } }

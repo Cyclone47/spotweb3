@@ -1,0 +1,228 @@
+<?php
+
+require_once __DIR__.'/../../../lib/Bootstrap.php';
+require_once __DIR__.'/../../../lib/services/Nntp/Services_Nntp_PipelineDepth.php';
+require_once __DIR__.'/../../../lib/services/Nntp/Services_Nntp_ConnectionLimit.php';
+
+use PHPUnit\Framework\TestCase;
+
+class ServicesSettingsBaseTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        /*
+         * The settings container intentionally keeps application state in
+         * static properties. Reset it per test so schema sources cannot leak
+         * from one assertion to the next.
+         */
+        $container = new ReflectionClass(Services_Settings_Container::class);
+        foreach (['_instance' => null, '_settings' => [], '_sources' => []] as $propertyName => $value) {
+            $property = $container->getProperty($propertyName);
+            $property->setAccessible(true);
+            $property->setValue(null, $value);
+        }
+    }
+
+    public function testSchemaVersionIsBumpedForInnoDbConversion()
+    {
+        $this->assertSame('0.71', SPOTDB_SCHEMA_VERSION);
+    }
+
+    public function testSchemaVersionGateRequiresCurrentSchema()
+    {
+        $settingsContainer = new Services_Settings_Container();
+        $settingsContainer->addSource(new ServicesSettingsBaseTestSource(['schemaversion' => '0.70']));
+        $settingsBase = new Services_Settings_Base($settingsContainer, new ServicesSettingsBaseTestBlackWhiteListDao());
+
+        $this->assertFalse($settingsBase->schemaValid());
+    }
+
+    public function testSchemaVersionGateAcceptsBumpedSchema()
+    {
+        $settingsContainer = new Services_Settings_Container();
+        $settingsContainer->addSource(new ServicesSettingsBaseTestSource(['schemaversion' => SPOTDB_SCHEMA_VERSION]));
+        $settingsBase = new Services_Settings_Base($settingsContainer, new ServicesSettingsBaseTestBlackWhiteListDao());
+
+        $this->assertTrue($settingsBase->schemaValid());
+    }
+
+    public function testNntpPipelineDepthDefaultsWhenMissing()
+    {
+        $settings = new Services_Settings_Container();
+        $settings->addSource(new ServicesSettingsBaseTestSource([]));
+        $service = new Services_Settings_Base($settings, new ServicesSettingsBaseTestBlackWhiteListDao());
+
+        $result = $service->validateSettings($this->validSettingsWithoutPipelineDepth());
+
+        $this->assertTrue($result->isSuccess());
+        $validated = $result->getData('settings');
+        $this->assertSame(Services_Nntp_PipelineDepth::DefaultDepth, $validated['nntp_nzb']['article_pipeline_depth']);
+        $this->assertSame(Services_Nntp_PipelineDepth::DefaultDepth, $validated['nntp_hdr']['article_pipeline_depth']);
+        $this->assertSame(Services_Nntp_PipelineDepth::DefaultDepth, $validated['nntp_post']['article_pipeline_depth']);
+    }
+
+    public function testNntpPipelineDepthAcceptsSafeBoundedInteger()
+    {
+        $settings = new Services_Settings_Container();
+        $settings->addSource(new ServicesSettingsBaseTestSource([]));
+        $service = new Services_Settings_Base($settings, new ServicesSettingsBaseTestBlackWhiteListDao());
+        $form = $this->validSettingsWithoutPipelineDepth();
+        $form['nntp_nzb']['article_pipeline_depth'] = '1';
+        $form['nntp_hdr']['article_pipeline_depth'] = '32';
+        $form['nntp_post']['article_pipeline_depth'] = '128';
+
+        $result = $service->validateSettings($form);
+
+        $this->assertTrue($result->isSuccess());
+        $validated = $result->getData('settings');
+        $this->assertSame(1, $validated['nntp_nzb']['article_pipeline_depth']);
+        $this->assertSame(32, $validated['nntp_hdr']['article_pipeline_depth']);
+        $this->assertSame(128, $validated['nntp_post']['article_pipeline_depth']);
+    }
+
+    public function testNntpPipelineDepthRejectsInvalidValues()
+    {
+        $settings = new Services_Settings_Container();
+        $settings->addSource(new ServicesSettingsBaseTestSource([]));
+        $service = new Services_Settings_Base($settings, new ServicesSettingsBaseTestBlackWhiteListDao());
+        $form = $this->validSettingsWithoutPipelineDepth();
+        $form['nntp_hdr']['article_pipeline_depth'] = '129';
+
+        $result = $service->validateSettings($form);
+
+        $this->assertFalse($result->isSuccess());
+    }
+
+    public function testNntpEncryptionModesAreAcceptedForAllServerRoles()
+    {
+        $service = new Services_Settings_Base(new Services_Settings_Container(), new ServicesSettingsBaseTestBlackWhiteListDao());
+        foreach (['ssl', 'tls', 'starttls'] as $mode) {
+            $form = $this->validSettingsWithoutPipelineDepth();
+            foreach (['nntp_nzb', 'nntp_hdr', 'nntp_post'] as $role) {
+                $form[$role]['enc'] = ['switch' => 'on', 'select' => $mode];
+                $form[$role]['verifyname'] = ['switch' => 'on'];
+            }
+            $result = $service->validateSettings($form);
+            $this->assertTrue($result->isSuccess());
+            $validated = $result->getData('settings');
+            foreach (['nntp_nzb', 'nntp_hdr', 'nntp_post'] as $role) {
+                $this->assertSame($mode, $validated[$role]['enc']);
+                $this->assertTrue($validated[$role]['verifyname']);
+            }
+        }
+    }
+
+    public function testUnknownNntpEncryptionModeIsRejected()
+    {
+        $service = new Services_Settings_Base(new Services_Settings_Container(), new ServicesSettingsBaseTestBlackWhiteListDao());
+        $form = $this->validSettingsWithoutPipelineDepth();
+        $form['nntp_hdr']['enc'] = ['switch' => 'on', 'select' => 'automatic'];
+        $this->assertFalse($service->validateSettings($form)->isSuccess());
+    }
+
+    public function testNntpMaxConnectionsDefaultsAndValidatesRangeOneToHundred()
+    {
+        $settings = new Services_Settings_Container();
+        $settings->addSource(new ServicesSettingsBaseTestSource([]));
+        $service = new Services_Settings_Base($settings, new ServicesSettingsBaseTestBlackWhiteListDao());
+
+        $defaultResult = $service->validateSettings($this->validSettingsWithoutPipelineDepth());
+        $this->assertTrue($defaultResult->isSuccess());
+        $this->assertSame(
+            Services_Nntp_ConnectionLimit::DefaultConnections,
+            $defaultResult->getData('settings')['nntp_max_connections']
+        );
+
+        foreach ([1, 50, 100] as $validLimit) {
+            $form = $this->validSettingsWithoutPipelineDepth();
+            $form['nntp_max_connections'] = (string) $validLimit;
+            $result = $service->validateSettings($form);
+            $this->assertTrue($result->isSuccess());
+            $this->assertSame($validLimit, $result->getData('settings')['nntp_max_connections']);
+        }
+
+        foreach (['0', '101', '-5', 'abc'] as $invalidLimit) {
+            $form = $this->validSettingsWithoutPipelineDepth();
+            $form['nntp_max_connections'] = $invalidLimit;
+            $this->assertFalse($service->validateSettings($form)->isSuccess());
+        }
+    }
+
+    private function validSettingsWithoutPipelineDepth()
+    {
+        $server = ['host' => 'news.example', 'user' => '', 'pass' => '', 'enc' => false, 'port' => 119, 'buggy' => false, 'verifyname' => true];
+
+        return [
+            'nntp_nzb'                      => $server,
+            'nntp_hdr'                      => $server + ['use' => 'on'],
+            'nntp_post'                     => $server + ['use' => 'on'],
+            'spot_moderation'               => 'act',
+            'retentiontype'                 => 'fullonly',
+            'cookie_expires'                => 30,
+            'retention'                     => 0,
+            'retrieve_newer_than'           => '2009-11-01',
+            'retrieve_increment'            => 1000,
+            'systemfrommail'                => 'spotweb@example.com',
+            'highcount'                     => 10,
+            'customcss'                     => '',
+            'smtp'                          => ['host' => '', 'user' => '', 'pass' => '', 'port' => 587],
+            'blacklist_url'                 => '',
+            'whitelist_url'                 => '',
+            'ms_translator_subscriptionkey' => '',
+        ];
+    }
+}
+
+class ServicesSettingsBaseTestSource implements Services_Settings_IContainer
+{
+    private $_settings;
+
+    public function __construct(array $settings)
+    {
+        $this->_settings = $settings;
+    }
+
+    public function initialize(array $cfg)
+    {
+    }
+
+    public function getAllSettings()
+    {
+        return $this->_settings;
+    }
+
+    public function remove($name)
+    {
+    }
+
+    public function set($name, $value)
+    {
+    }
+}
+
+class ServicesSettingsBaseTestBlackWhiteListDao implements Dao_BlackWhiteList
+{
+    public function removeOldList($listUrl, $idtype)
+    {
+    }
+
+    public function updateExternalList($newlist, $idtype)
+    {
+    }
+
+    public function addSpotterToList($spotterId, $ourUserId, $origin, $idType)
+    {
+    }
+
+    public function removeSpotterFromList($spotterId, $ourUserId)
+    {
+    }
+
+    public function getSpotterList($ourUserId)
+    {
+    }
+
+    public function getBlacklistForSpotterId($userId, $spotterId)
+    {
+    }
+}

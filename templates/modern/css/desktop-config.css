@@ -1,0 +1,64 @@
+/*
+ * Settings, preferences and user management in the desktop skin: a menu bar on top and
+ * options "dialog" panels with square tabs and compact label/value rows (Spotnet Classic feel).
+ */
+@media (min-width: 901px) {
+  /* thin menu bar instead of the large page header */
+  body.sw-desktop.modern-config div#toolbar {
+    height: 34px; min-height: 34px; padding: 0 8px; background: var(--sw-menubar); border-bottom: 0; backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  body.sw-desktop.modern-config div#toolbar .sw-menubar { flex: 1; }
+  body.modern-config.sw-desktop button.sw-menu-btn { height: 34px; padding: 0 10px; border: 0; border-radius: 4px; background: transparent; box-shadow: none; color: var(--sw-text); font: inherit; font-weight: 400; }
+  body.modern-config.sw-desktop button.sw-menu-btn:hover, body.modern-config.sw-desktop .sw-menu.open button.sw-menu-btn { background: var(--sw-row-sel); }
+  body.sw-desktop.modern-config div#toolbar > [class^="close"] { order: 9; margin-left: auto; }
+  body.sw-desktop.modern-config div#toolbar > [class^="close"] p a { height: 26px; padding: 0 12px; border-radius: 3px; font-size: 13px; font-weight: 400; border: 1px solid var(--sw-border); background: var(--sw-surface); }
+
+  /* options panels */
+  body.sw-desktop.modern-config form.editsettingsform,
+  body.sw-desktop.modern-config form.edituserprefsform,
+  body.sw-desktop.modern-config #usermanagementtabs {
+    max-width: 980px; margin: 12px auto 30px; padding: 0; border-radius: 4px; box-shadow: none; background: var(--sw-surface); border: 1px solid var(--sw-border); overflow: visible;
+  }
+  body.sw-desktop.modern-config .ui-tabs ul.ui-tabs-nav { padding: 8px 8px 0; gap: 2px; background: transparent; border-bottom: 1px solid var(--sw-border); }
+  body.sw-desktop.modern-config .ui-tabs ul.ui-tabs-nav li a {
+    padding: 6px 14px; border-radius: 3px 3px 0 0; border: 1px solid var(--sw-border); border-bottom: 0; background: var(--sw-surface-2) !important; color: var(--sw-text) !important; font-weight: 400; font-size: 13.5px; margin-bottom: -1px;
+  }
+  body.sw-desktop.modern-config .ui-tabs ul.ui-tabs-nav li.ui-tabs-selected a,
+  body.sw-desktop.modern-config .ui-tabs ul.ui-tabs-nav li.ui-state-active a { background: var(--sw-surface) !important; color: var(--sw-text) !important; font-weight: 600; box-shadow: inset 0 2px 0 var(--sw-accent); }
+  body.sw-desktop.modern-config .ui-tabs ul.ui-tabs-nav li a:hover { background: var(--sw-row-hover) !important; }
+  body.sw-desktop.modern-config .ui-tabs-panel { padding: 16px 20px 20px !important; }
+
+  /* compact label | control rows */
+  body.sw-desktop.modern-config .ui-tabs-panel dl { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; column-gap: 20px; align-items: center; }
+  body.sw-desktop.modern-config .ui-tabs-panel dt { margin: 0; padding: 9px 0; font-weight: 400; font-size: 13.5px; border-bottom: 1px solid var(--sw-border); align-self: stretch; display: flex; align-items: center; }
+  body.sw-desktop.modern-config .ui-tabs-panel dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--sw-border); align-self: stretch; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+  body.sw-desktop.modern-config .ui-tabs-panel dt:first-child { margin-top: 0; }
+  body.sw-desktop.modern-config .ui-tabs-panel dd > p, body.sw-desktop.modern-config .ui-tabs-panel dd small { margin: 0; font-size: 12.5px; color: var(--sw-muted); }
+  /* headings and long help texts span both columns */
+  body.sw-desktop.modern-config .ui-tabs-panel dl > dt:only-of-type, body.sw-desktop.modern-config .ui-tabs-panel dl > h4, body.sw-desktop.modern-config .ui-tabs-panel dl > p { grid-column: 1 / -1; }
+  body.sw-desktop.modern-config input[type=text], body.sw-desktop.modern-config input[type=password], body.sw-desktop.modern-config input[type=email],
+  body.sw-desktop.modern-config input[type=number], body.sw-desktop.modern-config select { min-height: 28px; height: 28px; padding: 2px 8px; border-radius: 3px; border: 1px solid var(--sw-border); background: var(--sw-surface); font-size: 13.5px; }
+  body.sw-desktop.modern-config textarea { border: 1px solid var(--sw-border); border-radius: 3px; background: var(--sw-surface); }
+  body.sw-desktop.modern-config input[type=checkbox], body.sw-desktop.modern-config input[type=radio] { width: 15px; height: 15px; }
+
+  /* buttons like the desktop app */
+  body.sw-desktop.modern-config .greyButton, body.sw-desktop.modern-config input[type=submit], body.modern-config.sw-desktop button:not([data-nav]):not(.sw-menu-btn):not(.sw-panel-toggle) {
+    height: 28px; padding: 0 16px; border-radius: 3px; font-size: 13.5px; font-weight: 400; background: var(--sw-surface-2); border: 1px solid var(--sw-border); color: var(--sw-text);
+  }
+  body.sw-desktop.modern-config input[name$="[submitedit]"], body.sw-desktop.modern-config input[type=submit][name*="submitadd"], body.sw-desktop.modern-config input[type=submit][name*="submitchange"] { background: var(--sw-accent); color: #fff; border-color: var(--sw-accent); font-weight: 600; }
+  body.sw-desktop.modern-config div.formActions { padding: 12px 20px; border-top: 1px solid var(--sw-border); background: var(--sw-surface-2); border-radius: 0 0 4px 4px; }
+
+  /* data tables */
+  body.sw-desktop.modern-config .ui-tabs-panel table th { height: 28px; padding: 0 10px; background: var(--sw-th) !important; color: var(--sw-text); text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 13.5px; border-right: 1px solid var(--sw-border) !important; }
+  body.sw-desktop.modern-config .ui-tabs-panel table td { padding: 7px 10px; font-size: 13.5px; }
+  body.sw-desktop.modern-config .ui-tabs-panel table tr:hover td { background: var(--sw-row-hover) !important; }
+
+  /* admin center uses its own card layout: keep it but square it up */
+  body.sw-desktop .admin-center { border-radius: 4px; box-shadow: none; }
+  body.sw-desktop .admin-card { border-radius: 4px; }
+}
+@media (min-width: 901px) {
+  html body.sw-desktop.modern-config form .greyButton, html body.sw-desktop.modern-config form input[type=submit] { background: var(--sw-surface-2) !important; background-image: none !important; box-shadow: none !important; border: 1px solid var(--sw-border) !important; border-radius: 3px !important; color: var(--sw-text) !important; height: 28px !important; padding: 0 18px !important; font-weight: 400 !important; text-shadow: none !important; width: auto !important; min-width: 90px; }
+  html body.sw-desktop.modern-config form input[name$="[submitedit]"], html body.sw-desktop.modern-config form input[name*="submitchange"], html body.sw-desktop.modern-config form input[name*="submitsave"] { background: var(--sw-accent) !important; border-color: var(--sw-accent) !important; color: #fff !important; font-weight: 600 !important; }
+  body.sw-desktop.modern-config .ui-tabs ul.ui-tabs-nav { box-shadow: none !important; }
+}

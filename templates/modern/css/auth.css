@@ -1,0 +1,82 @@
+/* Standalone pages (login, access denied): tokens + a centred card. */
+:root { --sw-bg:#eef2f8; --sw-surface:#ffffff; --sw-surface-2:#f3f6fb; --sw-border:#c9d2e3; --sw-text:#1b2233; --sw-muted:#5d6b85; --sw-accent:#2f6fe4; --sw-err:#b3261e; }
+:root[data-theme="dark"] { --sw-bg:#1b2332; --sw-surface:#1f2839; --sw-surface-2:#172030; --sw-border:#2f3c55; --sw-text:#e7ecf6; --sw-muted:#93a1bb; --sw-accent:#4d8dff; --sw-err:#f2867c; }
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--sw-bg); color: var(--sw-text); }
+body.sw-auth { font: 15px/1.5 "Inter", -apple-system, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; padding: 8vh 16px 24px; }
+body.sw-auth div.container { width: 100%; max-width: 400px; }
+body.sw-auth::before { content: "Spotweb"; position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+
+body.sw-auth div.login {
+  margin-top: 40px;
+  padding: 28px;
+  background: var(--sw-surface);
+  border: 1px solid var(--sw-border);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(15,23,42,.05), 0 20px 50px rgba(15,23,42,.1);
+  text-align: left;
+}
+.login h3#titel { margin: 0 0 6px; font-size: 22px; }
+.login h3#titel::after { content: "Sign in to continue"; display: block; margin-top: 4px; font-size: 14px; font-weight: 400; color: var(--sw-muted); }
+.login label { display: block; margin: 16px 0 6px; font-weight: 600; font-size: 14px; }
+.login br { display: none; }
+.login input[type=text], .login input[type=password] {
+  width: 100%; height: 44px; padding: 0 14px;
+  background: var(--sw-surface-2); color: var(--sw-text);
+  border: 1px solid transparent; border-radius: 12px; font: inherit; outline: 0;
+}
+.login input[type=text]:focus, .login input[type=password]:focus { border-color: var(--sw-accent); background: var(--sw-surface); }
+.login input[type=submit] {
+  width: 100%; height: 46px; margin-top: 22px; cursor: pointer;
+  background: var(--sw-accent); color: #fff; border: 0; border-radius: 12px; font: 700 15px/1 inherit;
+}
+.login input[type=submit]:hover { filter: brightness(1.08); }
+
+/* error / info lists */
+ul.formerrors, ul.forminformation { margin: 0 0 12px; padding: 0; list-style: none; }
+ul.formerrors li { padding: 10px 14px; margin-bottom: 8px; border-radius: 12px; background: rgba(220,38,38,.1); border: 1px solid var(--sw-err); color: var(--sw-err); font-size: 14px; }
+ul.forminformation li { padding: 10px 14px; margin-bottom: 8px; border-radius: 12px; background: rgba(22,163,74,.1); border: 1px solid #16a34a; font-size: 14px; }
+
+/* access denied notice */
+body.sw-auth div.permdenied { margin: 40px 0 0; padding: 12px 16px; border: 1px solid var(--sw-err); border-radius: 14px; background: rgba(220,38,38,.08); color: var(--sw-err); font-size: 14px; }
+body.sw-auth div.permdenied p { margin: 0; }
+body.sw-auth div.permdenied + div.login, body.sw-auth div.permdenied ~ div.login { margin-top: 16px; }
+
+/* flat window look */
+body.sw-auth::before { content: none; }
+body.sw-auth div.container { max-width: 420px; }
+body.sw-auth div.login { margin-top: 12vh; padding: 0; border-radius: 4px; box-shadow: none; overflow: hidden; }
+body.sw-auth div.login form.loginform { padding: 0 24px 24px; }
+body.sw-auth div.login h3#titel { margin: 0 -24px 18px; padding: 0 24px; height: 36px; line-height: 36px; background: #1b2459; color: #fff; font-size: 13.5px; font-weight: 600; }
+:root[data-theme="dark"] body.sw-auth div.login h3#titel { background: #2b3d66; }
+body.sw-auth div.login h3#titel::after { content: none; }
+.login input[type=text], .login input[type=password] { height: 32px; border-radius: 3px; border: 1px solid var(--sw-border); background: var(--sw-surface); }
+.login input[type=text]:focus, .login input[type=password]:focus { border-color: var(--sw-accent); outline: 2px solid color-mix(in srgb, var(--sw-accent) 40%, transparent); }
+.login input[type=submit] { height: 32px; border-radius: 3px; font-weight: 600; margin-top: 18px; }
+.login label { font-weight: 600; font-size: 13px; margin: 14px 0 4px; }
+body.sw-auth div.permdenied { margin-top: 12vh; border-radius: 4px; }
+body.sw-auth div.permdenied + div.login { margin-top: 12px; }
+ul.formerrors li, ul.forminformation li { border-radius: 3px; }
+
+/* ---- same window as the setup wizard */
+body.sw-auth { font: 14px/1.5 "Segoe UI", -apple-system, Roboto, Helvetica, Arial, sans-serif; align-items: center; padding: 24px; }
+body.sw-auth div.container { max-width: 440px; }
+body.sw-auth div.login { margin-top: 0; border: 1px solid var(--sw-border); border-radius: 4px; background: var(--sw-surface); }
+body.sw-auth div.login form.loginform { padding: 22px 28px 0; }
+body.sw-auth div.login h3#titel { display: flex; align-items: center; gap: 10px; margin: -22px -28px 22px; padding: 0 14px; height: 36px; line-height: 36px; background: #1b2459; color: #fff; font-size: 13.5px; font-weight: 600; }
+body.sw-auth div.login h3#titel::before { content: ""; width: 20px; height: 20px; flex: none; background: url(../img/spotnet-icon-64.png) no-repeat center / contain; border-radius: 3px; }
+.login label { font-weight: 600; font-size: 13px; margin: 0 0 4px; }
+.login label + input { margin-bottom: 14px; }
+.login .win-foot { display: flex; justify-content: flex-end; margin: 6px -28px 0; padding: 12px 16px; background: var(--sw-surface-2); border-top: 1px solid var(--sw-border); }
+.login .win-foot input[type=submit] { width: auto; min-width: 100px; margin: 0; padding: 0 20px; height: 32px; border-radius: 3px; background: var(--sw-accent); color: #fff; border: 0; font-weight: 600; cursor: pointer; }
+body.sw-auth div.permdenied { margin: 0 0 12px; }
+@media (max-width: 520px) { body.sw-auth { padding: 0; align-items: stretch; } body.sw-auth div.login { border-radius: 0; border-left: 0; border-right: 0; min-height: 100vh; } }
+body.sw-auth div.login form.loginform { margin: 0; }
+.login label { margin: 14px 0 4px; }
+.login label:first-of-type { margin-top: 0; }
+.login label + input { margin-bottom: 0; }
+body.sw-auth div.login { padding-bottom: 0; }
+
+/* big logo above the sign-in window */
+body.sw-auth .sw-brand { display: block; width: min(360px, 80vw); height: auto; margin: 0 auto 14px; }
+@media (max-width: 520px) { body.sw-auth .sw-brand { margin-top: 24px; } }

@@ -1,0 +1,42 @@
+# Zero-config start:  docker compose up -d   ->  http://localhost:8080  (setup wizard on first visit)
+services:
+  spotweb:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - spotweb-data:/data
+    environment:
+      # Leave empty to use the setup wizard (recommended). Set SPOTWEB_SKIP_ONBOARDING=1 to skip it.
+      SPOTWEB_ADMIN_PASSWORD: ${SPOTWEB_ADMIN_PASSWORD:-}
+      SPOTWEB_SKIP_ONBOARDING: ${SPOTWEB_SKIP_ONBOARDING:-}
+      # Usenet server (applied on first start only; afterwards use the admin center)
+      SPOTWEB_NNTP_HOST: ${SPOTWEB_NNTP_HOST:-}
+      SPOTWEB_NNTP_USER: ${SPOTWEB_NNTP_USER:-}
+      SPOTWEB_NNTP_PASS: ${SPOTWEB_NNTP_PASS:-}
+      SPOTWEB_NNTP_ENCRYPTION: ${SPOTWEB_NNTP_ENCRYPTION:-tls}
+      SPOTWEB_RETRIEVE_INTERVAL: ${SPOTWEB_RETRIEVE_INTERVAL:-900}
+      SPOTWEB_TWITTER_CONSUMER_KEY: ${SPOTWEB_TWITTER_CONSUMER_KEY:-}
+      SPOTWEB_TWITTER_CONSUMER_SECRET: ${SPOTWEB_TWITTER_CONSUMER_SECRET:-}
+      # Default database is SQLite in /data. For PostgreSQL start with
+      # "docker compose --profile postgres up" and uncomment:
+      # SPOTWEB_DB_ENGINE: pdo_pgsql
+      # SPOTWEB_DB_HOST: db
+      # SPOTWEB_DB_USER: spotweb
+      # SPOTWEB_DB_PASS: ${SPOTWEB_DB_PASS:-}
+      # SPOTWEB_DB_NAME: spotweb
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    profiles: [postgres]
+    environment:
+      POSTGRES_USER: spotweb
+      POSTGRES_PASSWORD: ${SPOTWEB_DB_PASS:-}
+      POSTGRES_DB: spotweb
+    volumes:
+      - spotweb-db:/var/lib/postgresql/data
+
+volumes:
+  spotweb-data:
+  spotweb-db:

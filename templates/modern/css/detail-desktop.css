@@ -1,0 +1,84 @@
+/*
+ * Spot detail in the desktop skin, modelled on the Windows client: the spot opens inside the
+ * main window (sidebar and menu bar stay), as a tab. Title and actions on top, description
+ * and comments on the left, cover and information on the right. Each part scrolls on its own
+ * with a visible scrollbar, so the whole spot fits in the window.
+ */
+@media (min-width: 901px) {
+  /* visible, slim scrollbars for the scrolling regions */
+  body.sw-desktop { scrollbar-color: var(--sw-muted) var(--sw-surface-2); }
+  body.sw-desktop ::-webkit-scrollbar { width: 12px; height: 12px; }
+  body.sw-desktop ::-webkit-scrollbar-track { background: var(--sw-surface-2); }
+  body.sw-desktop ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--sw-muted) 70%, transparent); border: 2px solid var(--sw-surface-2); border-radius: 6px; min-height: 36px; }
+  body.sw-desktop ::-webkit-scrollbar-thumb:hover { background: var(--sw-muted); }
+
+  /* the sidebar and the tab strip stay visible while a spot is open */
+  body.sw-desktop.spotinfo div#filter { display: flex !important; }
+  body.sw-desktop.spotinfo div.spots { margin-left: 258px; padding: 0; }
+  body.sw-desktop.spotinfo div.spots > .sw-tabs { display: flex !important; }
+
+  /* the spot panel occupies the main area */
+  body.sw-desktop div#overlay {
+    position: fixed; top: 66px; left: 258px; right: 6px; bottom: 6px; z-index: 900;
+    background: var(--sw-surface); border: 1px solid var(--sw-border); border-radius: 0 3px 3px 3px; overflow: hidden;
+  }
+  body.sw-desktop div#overlay.loading { background: var(--sw-surface) url(../img/loading.gif) no-repeat 50% 50%; opacity: 1; }
+
+  body.sw-desktop div#overlay div#details,
+  body.sw-desktop.spotinfo-page div#details {
+    display: flex !important; flex-direction: column; height: 100%; max-width: none; margin: 0; padding: 0;
+    background: transparent; border: 0; border-radius: 0; box-shadow: none; overflow: hidden;
+  }
+  /* standalone spot page (opened in its own window) */
+  body.sw-desktop.spotinfo-page div#details { height: calc(100vh - 24px); max-width: 1400px; margin: 12px auto; border: 1px solid var(--sw-border); background: var(--sw-surface); border-radius: 4px; }
+
+  /* title and actions */
+  body.sw-desktop div#details table.spotheader { position: static; flex: none; display: block; width: auto; padding: 14px 22px 10px; background: transparent; border-bottom: 1px solid var(--sw-border); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  body.sw-desktop div#details table.spotheader tbody { display: block; }
+  body.sw-desktop div#details table.spotheader tr { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  body.sw-desktop div#details table.spotheader th.back { order: 0; }
+  body.sw-desktop div#details table.spotheader th.category { order: 1; }
+  body.sw-desktop div#details table.spotheader th.title { order: 2; flex: 1 1 calc(100% - 150px); min-width: 0; display: block; }
+  body.sw-desktop div#details table.spotheader th.title .spottitle { display: block; font-size: 22px; font-weight: 600; line-height: 1.25; letter-spacing: -.005em; overflow-wrap: anywhere; }
+  body.sw-desktop div#details table.spotheader th.title .spotmeta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 3px; font-size: 13px; font-weight: 400; color: var(--sw-muted); }
+  body.sw-desktop div#details table.spotheader th.title .spotmeta a { color: var(--sw-muted); text-decoration: none; }
+  body.sw-desktop div#details table.spotheader th.title .spotmeta a:hover { color: var(--sw-accent); }
+  body.sw-desktop div#details table.spotheader th:not(.back):not(.category):not(.title) { order: 5; }
+  body.sw-desktop div#details table.spotheader th.nzb { order: 4; margin-top: 6px; }
+  body.sw-desktop div#details table.spotheader th.nzb a.nzb { height: 36px; border-radius: 3px; padding: 0 20px; }
+  body.sw-desktop div#details table.spotheader th.copy { order: 5; }
+  body.sw-desktop div#details table.spotheader th.watch { order: 4; margin-top: 6px; }
+  body.sw-desktop div#details table.spotheader th.sabnzbd, body.sw-desktop div#details table.spotheader th.search, body.sw-desktop div#details table.spotheader th.spamreport { margin-top: 6px; }
+  /* start the action row on its own line, below the title */
+  body.sw-desktop div#details table.spotheader th.title::after { content: ""; display: block; }
+
+  /* body: description + comments | cover + information */
+  body.sw-desktop div#details div.spotbody { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 340px; }
+  body.sw-desktop div#details div.spotmain { min-width: 0; overflow-y: auto; padding: 18px 24px 24px; }
+  body.sw-desktop div#details div.spotside { min-width: 0; overflow-y: auto; padding: 18px 22px 24px; border-left: 1px solid var(--sw-border); background: var(--sw-surface-2); }
+
+  body.sw-desktop div#details div.spotmain div.description { margin: 0 0 18px; padding: 0; }
+  body.sw-desktop div#details div.spotmain div.description h4 { display: block; margin: 0 0 8px; color: var(--sw-text); font-size: 14px; font-weight: 700; letter-spacing: 0; text-transform: none; }
+  body.sw-desktop div#details div.spotmain div.description pre { margin: 0; padding: 0; background: transparent; border: 0; font: inherit; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--sw-text); }
+  body.sw-desktop div#details div.spotmain div.comments { margin: 0; padding: 0; }
+  body.sw-desktop div#details div.spotmain div.comments h4 { color: var(--sw-text); font-size: 14px; font-weight: 700; letter-spacing: 0; text-transform: none; }
+
+  /* side column: cover on top, information as a compact list */
+  body.sw-desktop div#details div.spotside table.spotdetails,
+  body.sw-desktop div#details div.spotside table.spotdetails > tbody,
+  body.sw-desktop div#details div.spotside table.spotdetails > tbody > tr,
+  body.sw-desktop div#details div.spotside table.spotdetails > tr { display: block !important; width: auto !important; margin: 0; padding: 0; border: 0; background: none; }
+  body.sw-desktop div#details div.spotside td.img { display: block !important; width: auto !important; min-width: 0 !important; margin: 0 0 18px !important; padding: 0; grid-column: auto; grid-row: auto; }
+  body.sw-desktop div#details div.spotside td.img img { display: block; width: 100%; height: auto; max-width: 100%; border-radius: 3px; border: 1px solid var(--sw-border); box-shadow: none; }
+  body.sw-desktop div#details div.spotside td.info { display: block !important; width: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; grid-column: auto; grid-row: auto; flex: none !important; }
+  body.sw-desktop div#details div.spotside h4.infotitle { margin: 0 0 6px; color: var(--sw-text); font-size: 14px; font-weight: 700; letter-spacing: 0; text-transform: none; }
+  body.sw-desktop div#details div.spotside table.spotinfo { display: grid !important; grid-template-columns: minmax(90px, 120px) 1fr !important; column-gap: 12px; width: 100% !important; }
+  body.sw-desktop div#details div.spotside table.spotinfo th { font-size: 13px; padding: 7px 0; }
+  body.sw-desktop div#details div.spotside table.spotinfo td { font-size: 13.5px; padding: 7px 0; word-break: break-word; }
+
+  /* spot tab in the tab strip */
+  body.sw-desktop .sw-tab-spot { gap: 8px; max-width: 320px; }
+  body.sw-desktop .sw-tab-spot .sw-tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.sw-desktop .sw-tab-spot .sw-tab-x { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 3px; cursor: pointer; font-size: 15px; line-height: 1; color: var(--sw-muted); }
+  body.sw-desktop .sw-tab-spot .sw-tab-x:hover { background: var(--sw-row-sel); color: var(--sw-text); }
+}

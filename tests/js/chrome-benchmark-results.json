@@ -1,0 +1,41 @@
+{
+  "e2e": {
+    "elapsedMs": 928,
+    "states": [
+      "downloading",
+      "verifying",
+      "repairing",
+      "extracting",
+      "completed"
+    ],
+    "missingSegments": 1,
+    "corruptSegments": 1,
+    "repairedSlices": 3,
+    "extractedFile": "out_0_BenchmarkVideo_1080p.mkv",
+    "extractedSize": 12582912,
+    "expectedSize": 12582912,
+    "extractedCrc32": 3344121258,
+    "expectedCrc32": 3344121258,
+    "crcMatch": true,
+    "peakWorkerHeapMB": 0
+  },
+  "tenGb": {
+    "state": "completed",
+    "elapsedMs": 150967,
+    "elapsedSeconds": 150.97,
+    "totalSegments": 1280,
+    "completedSegments": 1280,
+    "downloadedWireBytes": 11075835145,
+    "decodedBytes": 10737418240,
+    "opfsFileSize": 10737418240,
+    "expectedSize": 10737418240,
+    "combinedCrc32": 2637297735,
+    "expectedCrc32": 2637297735,
+    "crcMatch": true,
+    "throughputMBps": 67.83,
+    "peakWorkerHeapBytes": 0,
+    "peakWorkerHeapMB": 0,
+    "opfsUsageBeforeCleanupBytes": 10738651705
+  },
+  "peakMainThreadHeapMB": 0.75
+}

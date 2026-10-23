@@ -1,0 +1,11 @@
+# Development override: live-edit templates/CSS/JS without rebuilding.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+services:
+  spotweb:
+    volumes:
+      - ./templates:/var/www/html/templates
+      - ./lib:/var/www/html/lib
+      - ./locales:/var/www/html/locales
+      - ./settings.php:/var/www/html/settings.php
+      - ./images:/var/www/html/images
+      - ./utils:/var/www/html/utils

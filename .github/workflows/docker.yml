@@ -1,0 +1,57 @@
+name: Docker
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build image
+        run: docker build -t spotweb:ci .
+      - name: Start with zero config (SQLite)
+        run: docker run -d --name spotweb -p 8080:80 -e SPOTWEB_ADMIN_PASSWORD=ci-password -e SPOTWEB_RETRIEVE_INTERVAL=0 spotweb:ci
+      - name: Wait for setup (proves schema + settings were installed)
+        run: |
+          for i in $(seq 1 30); do
+            curl -fs "http://localhost:8080/?page=setup" | grep 'id="wiz"' >/dev/null && exit 0
+            sleep 2
+          done
+          docker logs spotweb
+          exit 1
+      - name: Check browser assets and background services
+        run: |
+          curl -fs http://localhost:8080/js/browser-download/vendor/7zz.wasm >/dev/null
+          docker exec spotweb test -x /usr/local/bin/spotweb-entrypoint
+          for i in $(seq 1 10); do
+            docker exec spotweb test -s /tmp/spotweb_ws_relay.lock && docker exec spotweb test -s /data/cache/retriever-schedule.json && break
+            sleep 1
+          done
+          docker exec spotweb test -s /tmp/spotweb_ws_relay.lock
+          docker exec spotweb test -s /data/cache/retriever-schedule.json
+      - name: Check shell scripts
+        run: shellcheck -x proxmox/install-lxc.sh proxmox/create-lxc.sh
+
+  native-debian-install:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        debian: ['12', '13']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install in a clean Debian filesystem
+        run: |
+          docker run -d --name native -p 127.0.0.1:8081:80 -v "$PWD:/source:ro" debian:${{ matrix.debian }}-slim sleep infinity
+          docker exec native bash /source/proxmox/install-lxc.sh --source /source --no-start
+          docker exec native apache2ctl -k start
+          docker exec -d -u www-data native bash -c 'set -a; source /etc/spotweb/spotweb.env; exec php /opt/spotweb/bin/nntp-relay.php --host=127.0.0.1 --port=8089'
+          docker exec -u www-data native bash -c 'set -a; source /etc/spotweb/spotweb.env; php /opt/spotweb/bin/retrieve-scheduler.php'
+      - name: Verify setup, assets and service files
+        run: |
+          curl -fs 'http://localhost:8081/?page=setup' | grep 'id="wiz"' >/dev/null
+          curl -fs http://localhost:8081/js/browser-download/vendor/7zz.wasm >/dev/null
+          docker exec native test -s /var/lib/spotweb/tmp/spotweb_ws_relay.lock
+          docker exec native test -s /var/lib/spotweb/cache/retriever-schedule.json
+          docker exec native systemd-analyze verify /etc/systemd/system/spotweb-nntp-relay.service /etc/systemd/system/spotweb-retriever.service /etc/systemd/system/spotweb-retriever.timer

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Spotweb">
+  <rect width="64" height="64" rx="12" fill="#1b2459"/>
+  <g stroke="#6f9bff" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M32 32 15 17M32 32l17-15M32 32v21"/>
+    <path d="M15 17q17-8 34 0" stroke-width="2" opacity=".55"/>
+    <path d="M15 17q-4 21 17 36M49 17q4 21-17 36" stroke-width="2" opacity=".55"/>
+  </g>
+  <circle cx="15" cy="17" r="5" fill="#6f9bff"/>
+  <circle cx="49" cy="17" r="5" fill="#6f9bff"/>
+  <circle cx="32" cy="53" r="5" fill="#6f9bff"/>
+  <circle cx="32" cy="32" r="9" fill="#ffffff"/>
+</svg>
