@@ -17,7 +17,7 @@ Open `http://localhost:8080/` and complete the setup wizard.
 ### Proxmox: one command in the node Shell
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /tmp/spotweb3-install.sh && bash /tmp/spotweb3-install.sh
+curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /root/spotweb3-install.sh && bash /root/spotweb3-install.sh
 ```
 
 Creates a new Debian 13 LXC, downloads its template and installs Spotweb3.

@@ -13,7 +13,7 @@ en kies **Shell**. Voer de opdracht uit als `root`, op de host.
 ## 2. Plak deze opdracht
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /tmp/spotweb3-install.sh && bash /tmp/spotweb3-install.sh
+curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /root/spotweb3-install.sh && bash /root/spotweb3-install.sh
 ```
 
 De installer kiest automatisch een vrij container-ID en downloadt het actuele
@@ -63,13 +63,13 @@ Een SSH-sleutel kun je bij installatie meegeven met `--ssh-key`.
 Zonder vragen, met de getoonde standaardkeuzes:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /tmp/spotweb3-install.sh && bash /tmp/spotweb3-install.sh --yes
+curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /root/spotweb3-install.sh && bash /root/spotweb3-install.sh --yes
 ```
 
 Eigen opslag, bridge of capaciteit (pas de namen aan jouw Proxmox aan):
 
 ```bash
-bash /tmp/spotweb3-install.sh --yes --storage local-zfs --template-storage local --bridge vmbr1 --memory 4096 --disk 32
+bash /root/spotweb3-install.sh --yes --storage local-zfs --template-storage local --bridge vmbr1 --memory 4096 --disk 32
 ```
 
 Optioneel: `--id 120`, `--hostname spotweb`, `--cores 2`,

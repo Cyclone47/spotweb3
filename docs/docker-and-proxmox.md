@@ -52,7 +52,7 @@ There is no shared default database password.
 Open **your Proxmox node → Shell** as root and paste:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /tmp/spotweb3-install.sh && bash /tmp/spotweb3-install.sh
+curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /root/spotweb3-install.sh && bash /root/spotweb3-install.sh
 ```
 
 The helper selects a free guest ID, downloads the current Debian 13 template,
