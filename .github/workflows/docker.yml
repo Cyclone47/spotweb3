@@ -8,7 +8,7 @@ jobs:
   build-and-smoke-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build image
         run: docker build -t spotweb:ci .
       - name: Start with zero config (SQLite)
@@ -50,7 +50,7 @@ jobs:
       matrix:
         debian: ['12', '13']
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install in a clean Debian filesystem
         run: |
           docker run -d --name native -p 127.0.0.1:8081:80 -p 127.0.0.1:8444:443 -v "$PWD:/source:ro" debian:${{ matrix.debian }}-slim sleep infinity
