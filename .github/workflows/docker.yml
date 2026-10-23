@@ -32,7 +32,9 @@ jobs:
           docker exec spotweb test -s /tmp/spotweb_ws_relay.lock
           docker exec spotweb test -s /data/cache/retriever-schedule.json
       - name: Check shell scripts
-        run: shellcheck -x proxmox/install-lxc.sh proxmox/create-lxc.sh
+        run: shellcheck -x proxmox/install-lxc.sh proxmox/create-lxc.sh proxmox/quick-install.sh tests/proxmox-quick-install.test.sh
+      - name: Check Proxmox provisioning decisions with mocked host commands
+        run: bash tests/proxmox-quick-install.test.sh
 
   native-debian-install:
     runs-on: ubuntu-latest

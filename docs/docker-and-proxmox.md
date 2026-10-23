@@ -10,7 +10,7 @@ retrieval scheduler. A prebuilt image is not required; Docker builds from source
 | --- | --- |
 | Docker, PHP 8.3 + SQLite | Fresh image built; empty-database initialization, setup HTTP response, background relay, scheduler and container health checked. |
 | Native Debian 13, PHP 8.4 + SQLite | Installer and repeat installation executed on a clean Debian filesystem; Apache served the setup wizard; relay discovery and scheduler checked. systemd units validated and enabled. |
-| Proxmox host provisioning | Script syntax, ShellCheck and dry-run checked. Actual `pct create` and guest boot require a Proxmox host and were not exercised here. |
+| Proxmox host provisioning | Script syntax, ShellCheck and ten mocked provisioning scenarios checked. Actual `pct create` and guest boot require a Proxmox host and were not exercised here. |
 | Native Debian 12, PHP 8.2 + SQLite | Installer executed on a clean Debian filesystem; Apache served the setup wizard; relay, scheduler, browser assets and systemd unit validation checked. Actual LXC boot was not exercised. |
 
 ## Docker
@@ -46,6 +46,35 @@ When enabling PostgreSQL, set `SPOTWEB_DB_PASS` to your own password in an ignor
 There is no shared default database password.
 
 ## Proxmox: native unprivileged LXC
+
+### Recommended: one command on the host
+
+Open **your Proxmox node → Shell** as root and paste:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Cyclone47/spotweb3/main/proxmox/quick-install.sh -o /tmp/spotweb3-install.sh && bash /tmp/spotweb3-install.sh
+```
+
+The helper selects a free guest ID, downloads the current Debian 13 template,
+and installs Spotweb3 from a single GitHub source revision. Defaults: unprivileged
+LXC, 2 CPU cores, 2048 MiB RAM, 16 GiB disk, `vmbr0`, DHCP, start on boot.
+If multiple storage pools are available, it asks which to use; Enter accepts the
+suggestion. Confirm the overview and wait for the setup URL at the end.
+
+Add `--yes` to skip questions. Override defaults with `--storage NAME`,
+`--template-storage NAME`, `--bridge NAME`, `--id ID`, `--cores 2`,
+`--memory 2048`, `--disk 16`, `--hostname spotweb`, or `--ssh-key FILE`.
+Use `--dry-run` for a preview without downloads or creation. No Linux password is
+required: use `pct enter ID` on the host. Set your application password and Usenet
+credentials in the web wizard. Browser downloads from another computer require
+trusted HTTPS, as explained below.
+
+This creates a new container, not an update of an existing installation. Failed
+installations retain the guest for inspection. For step-by-step instructions in Dutch,
+see [Proxmox installeren](proxmox-nl.md). Host provisioning is checked with mocked
+Proxmox commands; an actual Proxmox boot remains to be confirmed.
+
+### Advanced: offline source bundle or existing container
 
 The installer runs Apache and PHP directly inside Debian. Docker nesting is not
 needed. Start with a dedicated **Debian 13, unprivileged** container, 2 CPU cores,
