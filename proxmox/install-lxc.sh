@@ -128,6 +128,33 @@ a2enmod rewrite proxy proxy_http proxy_wstunnel
 a2enconf spotweb-environment
 a2dissite 000-default
 a2ensite spotweb
+php /opt/spotweb/bin/configure-https.php /opt/spotweb
+a2enmod ssl
+a2enconf spotweb-https-info
+a2ensite spotweb-https
+cat > /etc/systemd/system/spotweb-https-renew.service <<'EOF'
+[Unit]
+Description=Renew the Spotweb local HTTPS server certificate
+After=apache2.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/php /opt/spotweb/bin/configure-https.php /opt/spotweb
+ExecStartPost=/usr/sbin/apache2ctl -k graceful
+UMask=0077
+EOF
+cat > /etc/systemd/system/spotweb-https-renew.timer <<'EOF'
+[Unit]
+Description=Check the Spotweb HTTPS certificate daily
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
 cat > /etc/systemd/system/spotweb-nntp-relay.service <<'EOF'
 [Unit]
 Description=Spotweb WebSocket to NNTP relay
@@ -186,14 +213,16 @@ set +a
 runuser -u www-data --preserve-environment -- php /opt/spotweb/bin/docker-init.php
 apache2ctl configtest
 systemd-analyze verify /etc/systemd/system/spotweb-nntp-relay.service \
-    /etc/systemd/system/spotweb-retriever.service /etc/systemd/system/spotweb-retriever.timer
-systemctl enable apache2 spotweb-nntp-relay.service spotweb-retriever.timer
+    /etc/systemd/system/spotweb-retriever.service /etc/systemd/system/spotweb-retriever.timer \
+    /etc/systemd/system/spotweb-https-renew.service /etc/systemd/system/spotweb-https-renew.timer
+systemctl enable apache2 spotweb-nntp-relay.service spotweb-retriever.timer spotweb-https-renew.timer
 if ((!NO_START)); then
     systemctl daemon-reload
     systemctl restart apache2 spotweb-nntp-relay.service
     systemctl start spotweb-retriever.timer
+    systemctl start spotweb-https-renew.timer
     systemctl is-active --quiet apache2 spotweb-nntp-relay.service spotweb-retriever.timer
 fi
 printf '\nInstalled Spotweb. Open http://<container-IP>/?page=setup to configure it.\n'
 printf 'Persistent data: /var/lib/spotweb\nSchedule: Admin Center > Automatic spot retrieval\n'
-printf 'Browser downloads require HTTPS when accessed from another computer.\n'
+printf 'HTTPS is available on port 443. The setup wizard explains the local certificate and checks browser download support.\n'

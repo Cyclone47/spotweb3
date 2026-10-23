@@ -38,6 +38,9 @@ jobs:
             -type f -name '*.php' -print0 |
           xargs -0 -n1 php -l
 
+      - name: Check local HTTPS certificates
+        run: php tests/local-https.test.php
+
       - name: Configure PHPCompatibility
         run: vendor/bin/phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility
 

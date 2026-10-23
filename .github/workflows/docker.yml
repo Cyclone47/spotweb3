@@ -12,7 +12,7 @@ jobs:
       - name: Build image
         run: docker build -t spotweb:ci .
       - name: Start with zero config (SQLite)
-        run: docker run -d --name spotweb -p 8080:80 -e SPOTWEB_ADMIN_PASSWORD=ci-password -e SPOTWEB_RETRIEVE_INTERVAL=0 spotweb:ci
+        run: docker run -d --name spotweb -p 8080:80 -p 8443:443 -e SPOTWEB_HTTPS_PORT=8443 -e SPOTWEB_ADMIN_PASSWORD=ci-password -e SPOTWEB_RETRIEVE_INTERVAL=0 spotweb:ci
       - name: Wait for setup (proves schema + settings were installed)
         run: |
           for i in $(seq 1 30); do
@@ -23,6 +23,12 @@ jobs:
           exit 1
       - name: Check browser assets and background services
         run: |
+          docker cp spotweb:/etc/spotweb/tls/ca.crt /tmp/spotweb-ca.crt
+          curl --cacert /tmp/spotweb-ca.crt -fs 'https://localhost:8443/?page=setup' | grep 'id="https-enable"' >/dev/null
+          curl --cacert /tmp/spotweb-ca.crt -fs 'https://localhost:8443/?page=setup&certificate=1' | cmp /tmp/spotweb-ca.crt -
+          test "$(docker exec spotweb stat -c %a /etc/spotweb/tls/server.key)" = 600
+          test "$(curl --cacert /tmp/spotweb-ca.crt -s -o /dev/null -w '%{http_code}' https://localhost:8443/bin/configure-https.php)" = 403
+          curl --cacert /tmp/spotweb-ca.crt -fs https://localhost:8443/js/browser-download/vendor/7zz.wasm >/dev/null
           curl -fs http://localhost:8080/js/browser-download/vendor/7zz.wasm >/dev/null
           docker exec spotweb test -x /usr/local/bin/spotweb-entrypoint
           for i in $(seq 1 10); do
@@ -32,9 +38,11 @@ jobs:
           docker exec spotweb test -s /tmp/spotweb_ws_relay.lock
           docker exec spotweb test -s /data/cache/retriever-schedule.json
       - name: Check shell scripts
-        run: shellcheck -x proxmox/install-lxc.sh proxmox/create-lxc.sh proxmox/quick-install.sh tests/proxmox-quick-install.test.sh
+        run: shellcheck -x docker/entrypoint.sh proxmox/install-lxc.sh proxmox/create-lxc.sh proxmox/quick-install.sh tests/proxmox-quick-install.test.sh
       - name: Check Proxmox provisioning decisions with mocked host commands
         run: bash tests/proxmox-quick-install.test.sh
+      - name: Check HTTPS onboarding URLs
+        run: node tests/js/setup-https.test.js
 
   native-debian-install:
     runs-on: ubuntu-latest
@@ -45,13 +53,17 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install in a clean Debian filesystem
         run: |
-          docker run -d --name native -p 127.0.0.1:8081:80 -v "$PWD:/source:ro" debian:${{ matrix.debian }}-slim sleep infinity
+          docker run -d --name native -p 127.0.0.1:8081:80 -p 127.0.0.1:8444:443 -v "$PWD:/source:ro" debian:${{ matrix.debian }}-slim sleep infinity
           docker exec native bash /source/proxmox/install-lxc.sh --source /source --no-start
           docker exec native apache2ctl -k start
           docker exec -d -u www-data native bash -c 'set -a; source /etc/spotweb/spotweb.env; exec php /opt/spotweb/bin/nntp-relay.php --host=127.0.0.1 --port=8089'
           docker exec -u www-data native bash -c 'set -a; source /etc/spotweb/spotweb.env; php /opt/spotweb/bin/retrieve-scheduler.php'
       - name: Verify setup, assets and service files
         run: |
+          docker exec native php /opt/spotweb/tests/local-https.test.php
+          docker cp native:/etc/spotweb/tls/ca.crt /tmp/native-ca.crt
+          curl --cacert /tmp/native-ca.crt -fs 'https://localhost:8444/?page=setup' | grep 'id="https-enable"' >/dev/null
+          curl --cacert /tmp/native-ca.crt -fs 'https://localhost:8444/?page=setup&certificate=1' | cmp /tmp/native-ca.crt -
           curl -fs 'http://localhost:8081/?page=setup' | grep 'id="wiz"' >/dev/null
           curl -fs http://localhost:8081/js/browser-download/vendor/7zz.wasm >/dev/null
           docker exec native test -s /var/lib/spotweb/tmp/spotweb_ws_relay.lock

@@ -42,6 +42,23 @@ class SpotPage_setup extends SpotPage_Abs
         $form = $this->_params['setupform'];
         $errors = [];
 
+        // Public CA certificate only. Private keys are root-owned and never served.
+        if (($this->_params['certificate'] ?? '') === '1') {
+            $certificate = '/etc/spotweb/tls/ca.crt';
+            if (!is_readable($certificate)) {
+                http_response_code(404);
+
+                return;
+            }
+            header('Content-Type: application/x-x509-ca-cert');
+            header('Content-Disposition: attachment; filename="spotweb3-local-ca.crt"');
+            header('X-Content-Type-Options: nosniff');
+            header('Cache-Control: no-store');
+            readfile($certificate);
+
+            return;
+        }
+
         if ($form['action'] === 'testnntp') {
             $this->renderNntpTest($form);
 
@@ -63,6 +80,7 @@ class SpotPage_setup extends SpotPage_Abs
             'popular'   => self::POPULAR,
             'errors'    => $errors,
             'values'    => isset($form['username']) ? $form : [],
+            'https_port' => is_readable('/etc/spotweb/tls/ca.crt') ? (int) getenv('SPOTWEB_HTTPS_PORT') : 0,
         ]);
     }
 

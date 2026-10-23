@@ -6,6 +6,20 @@ export SPOTWEB_DATA_DIR
 mkdir -p "$SPOTWEB_DATA_DIR/cache"
 chown -R www-data:www-data "$SPOTWEB_DATA_DIR"
 
+php /var/www/html/bin/configure-https.php /var/www/html
+a2enmod ssl >/dev/null
+a2enconf spotweb-https-info >/dev/null
+a2ensite spotweb-https >/dev/null
+
+# Keep the one-year server certificate valid without changing the trusted CA.
+(
+    while sleep 86400; do
+        if php /var/www/html/bin/configure-https.php /var/www/html; then
+            apache2ctl -k graceful || true
+        fi
+    done
+) &
+
 # Run init as www-data so the SQLite file and cache have the right owner.
 su -s /bin/sh www-data -c "php /var/www/html/bin/docker-init.php"
 

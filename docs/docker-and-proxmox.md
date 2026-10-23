@@ -28,6 +28,20 @@ configuration and cache live in the persistent `spotweb-data` volume at `/data`.
 The relay and retrieval scheduler start automatically. Choose the retrieval
 interval in **Admin Center → Overview → Automatic spot retrieval**.
 
+HTTPS is published on host port **443**. When using a LAN IP, the setup wizard
+offers a switch to HTTPS before entering credentials, explains the local
+certificate warning and checks browser download support. Its certificate help
+offers the installation's public CA certificate and Windows trust instructions.
+The CA and private keys persist in the separate `spotweb-tls` volume; back it up
+alongside the data volume. Private keys are only readable by root.
+
+If port 443 is occupied, set `SPOTWEB_HTTPS_PORT=8443` in `.env` before starting.
+Set `SPOTWEB_TLS_NAMES=192.168.1.120,spotweb.example.lan` to your actual Docker
+host LAN IP/names so the certificate matches them; then recreate the service.
+Container addresses are detected automatically, but Docker cannot infer the
+host's LAN address. Each client must trust the local CA to remove warnings.
+An existing reverse proxy with a trusted certificate remains an alternative.
+
 The Compose file builds the local Dockerfile; it does not pull a published
 Spotweb image. Rebuild after changing application code:
 
@@ -66,8 +80,8 @@ Add `--yes` to skip questions. Override defaults with `--storage NAME`,
 `--memory 2048`, `--disk 16`, `--hostname spotweb`, or `--ssh-key FILE`.
 Use `--dry-run` for a preview without downloads or creation. No Linux password is
 required: use `pct enter ID` on the host. Set your application password and Usenet
-credentials in the web wizard. Browser downloads from another computer require
-trusted HTTPS, as explained below.
+credentials in the web wizard. The native installer also provisions HTTPS on
+port 443 with a per-installation local CA, as explained below.
 
 This creates a new container, not an update of an existing installation. Failed
 installations retain the guest for inspection. For step-by-step instructions in Dutch,
@@ -170,7 +184,25 @@ a [secure context](https://developer.mozilla.org/en-US/docs/Web/API/Window/showD
 The localhost exception used on your current machine does not apply to a remote
 container's LAN IP.
 
-Use your existing HTTPS reverse proxy with a certificate trusted by your browser.
+The updated Docker and native LXC installers configure port 443 automatically.
+Onboarding offers **Yes, use HTTPS**, describes the local certificate warning,
+then opens the HTTPS wizard from its beginning. No passwords are copied between
+the two origins. Switch before entering credentials. The page checks browser
+capabilities; the Downloads step verifies actual folder access. If a certificate
+exception does not enable the required features, use the wizard's public CA
+download and trust instructions, or a reverse proxy with a trusted certificate.
+Only trust a CA from your own installation. Importing it allows certificates
+issued by that installation to be trusted on that client computer.
+
+Each installation generates its own CA and server key under `/etc/spotweb/tls`.
+Keys are root-only and outside the document root. The CA is stable across restarts
+and IP changes. A daily renewal check renews the one-year server certificate;
+the local CA lasts ten years. Preserve the TLS directory/volume in backups.
+After a native guest IP change, run `php /opt/spotweb/bin/configure-https.php /opt/spotweb`
+and `systemctl reload apache2` inside the guest. Docker users set the host's
+LAN IP/names with `SPOTWEB_TLS_NAMES` and recreate the container.
+
+You can also use your existing HTTPS reverse proxy with a trusted certificate.
 Forward traffic to the guest's port 80, including WebSocket upgrades on
 `/nntp-relay-ws`. The native Apache site forwards that path to the relay bound only
 to `127.0.0.1:8089`; port 8089 does not need external exposure. Downloaded payloads
@@ -187,6 +219,8 @@ are written by the browser to the folder selected on the client computer.
 | Web server | `apache2.service` |
 | Persistent WebSocket relay | `spotweb-nntp-relay.service` |
 | Scheduler | `spotweb-retriever.timer` and `spotweb-retriever.service` |
+| Local HTTPS certificates | `/etc/spotweb/tls` (include in backups) |
+| HTTPS renewal | `spotweb-https-renew.timer` and `spotweb-https-renew.service` |
 
 ```sh
 systemctl status apache2 spotweb-nntp-relay spotweb-retriever.timer

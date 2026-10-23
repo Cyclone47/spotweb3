@@ -33,16 +33,36 @@ andere bridge, gebruik dan de aangepaste opdracht onderaan.
 
 Aan het einde verschijnt bijvoorbeeld `http://192.168.1.120/?page=setup`.
 Open **de link die jouw installer toont** op een computer in hetzelfde netwerk.
-Stel in de wizard je Spotweb-beheeraccount en Usenet-servergegevens in.
+De eerste stap biedt **Yes, use HTTPS on port 443** aan. Kies die knop als je
+bestanden rechtstreeks met de browser wilt downloaden, en daarna **Continue to
+HTTPS**. Doe dit voordat je je account- en Usenet-gegevens invult.
+
+De container heeft een eigen lokaal certificaat. Je browser kan daarom een
+waarschuwing tonen. Voor je eigen installatie kun je via **Geavanceerd → Doorgaan**
+verdergaan als je browser dat toestaat. De wizard controleert daarna of de
+benodigde browserfuncties beschikbaar zijn. Blijven ze geblokkeerd, of wil je de
+waarschuwing verwijderen? Open de certificaathulp in de wizard: download het
+publieke CA-certificaat en vertrouw dat op je computer. Voor Windows staan de
+stappen daar uitgeschreven. Doe dit alleen voor je eigen Spotweb-installatie.
+
+Stel daarna je Spotweb-beheeraccount en Usenet-servergegevens in.
 
 In **Admin Center → Overview → Automatic spot retrieval** kies je hoe vaak
 nieuwe spots worden opgehaald, bijvoorbeeld iedere 5, 15 of 30 minuten.
 De container en achtergrondservices starten automatisch mee met Proxmox.
 
-**Voor Download in browser vanaf een andere computer is HTTPS nodig**, met een
-certificaat dat je browser vertrouwt. Gebruik hiervoor je HTTPS-reverseproxy en
-stuur door naar poort 80 van de container, inclusief WebSockets op
-`/nntp-relay-ws`. De eerste installatie en normaal bladeren werken ook via HTTP.
+**Voor Download in browser gebruik je desktop Chrome of Edge.** HTTPS op poort
+443 is nu ingebouwd; een aparte reverseproxy is niet nodig. Heb je al een proxy
+met een vertrouwd certificaat, dan kun je die blijven gebruiken en doorsturen
+naar poort 80, inclusief WebSockets op `/nntp-relay-ws`. Normaal bladeren en
+andere downloadmethodes werken ook via HTTP.
+
+De privésleutels blijven op de server in `/etc/spotweb/tls`, leesbaar voor root.
+Iedere installatie heeft eigen sleutels. De server controleert dagelijks of het
+servercertificaat moet worden vernieuwd; de lokale CA blijft daarbij gelijk.
+Neem deze map mee in je normale containerback-up. Bij een gewijzigd IP-adres
+voer je binnen de container `php /opt/spotweb/bin/configure-https.php /opt/spotweb`
+en `systemctl reload apache2` uit om het certificaat bij te werken.
 
 ## Wachtwoorden en beheer
 

@@ -13,6 +13,8 @@ docker compose up -d --build
 ```
 
 Open `http://localhost:8080/` and complete the setup wizard.
+For LAN browser downloads, onboarding offers HTTPS on port 443 and local
+certificate help. See the deployment guide if that port is already in use.
 
 ### Proxmox: one command in the node Shell
 

@@ -27,8 +27,8 @@ RUN composer dump-autoload --classmap-authoritative --no-dev \
  && sed -ri 's!AllowOverride None!AllowOverride All!' /etc/apache2/apache2.conf \
  && mkdir -p /data && chown -R www-data:www-data /data
 
-VOLUME /data
-EXPOSE 80
+VOLUME /data /etc/spotweb/tls
+EXPOSE 80 443
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/spotweb-entrypoint
 ENTRYPOINT ["spotweb-entrypoint"]
 CMD ["apache2-foreground"]

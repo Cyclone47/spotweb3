@@ -4,9 +4,13 @@ services:
     build: .
     ports:
       - "8080:80"
+      - "${SPOTWEB_HTTPS_PORT:-443}:443"
     volumes:
       - spotweb-data:/data
+      - spotweb-tls:/etc/spotweb/tls
     environment:
+      SPOTWEB_HTTPS_PORT: ${SPOTWEB_HTTPS_PORT:-443}
+      SPOTWEB_TLS_NAMES: ${SPOTWEB_TLS_NAMES:-}
       # Leave empty to use the setup wizard (recommended). Set SPOTWEB_SKIP_ONBOARDING=1 to skip it.
       SPOTWEB_ADMIN_PASSWORD: ${SPOTWEB_ADMIN_PASSWORD:-}
       SPOTWEB_SKIP_ONBOARDING: ${SPOTWEB_SKIP_ONBOARDING:-}
@@ -39,4 +43,5 @@ services:
 
 volumes:
   spotweb-data:
+  spotweb-tls:
   spotweb-db:

@@ -150,6 +150,29 @@
 
       <!-- Step 1: appearance -->
       <section class="step active" data-step="1">
+        <div id="https-setup" class="download-location" hidden>
+          <strong>Use HTTPS for browser downloads</strong>
+          <p id="https-status">Saving downloads to a folder on this computer requires a secure connection and desktop Chrome or Edge.</p>
+<?php if (!empty($https_port)) { ?>
+          <button type="button" id="https-enable" data-port="<?php echo (int) $https_port; ?>" class="primary">Yes, use HTTPS on port <?php echo (int) $https_port; ?></button>
+          <button type="button" id="https-later">Not now</button>
+          <div id="https-instructions" hidden>
+            <p>This installation has its own local certificate. Your browser may show a certificate warning. For your own installation, open <b>Advanced</b> and choose <b>Proceed</b> if offered. Then Spotweb checks whether browser downloads are available.</p>
+            <p>Switch before entering your account or Usenet details: the HTTPS wizard starts at the beginning.</p>
+            <p><a id="https-continue" href="#">Continue to HTTPS</a></p>
+          </div>
+          <details id="https-trust-help">
+            <summary>Still blocked, or want to remove the certificate warning?</summary>
+            <p>Trust this installation's local CA certificate on each computer you use. Only install the certificate from your own Spotweb server. This allows certificates issued by that installation to be trusted on your computer.</p>
+            <p><a href="?page=setup&amp;certificate=1" download="spotweb3-local-ca.crt">Download this installation's public CA certificate</a></p>
+            <p><b>Windows:</b> open the downloaded certificate → Install Certificate → Current User → Place all certificates in the following store → Trusted Root Certification Authorities. Confirm the installation, then close and reopen Chrome or Edge.</p>
+            <p>For a direct LAN IP, the certificate must include that IP. Docker users can set <code>SPOTWEB_TLS_NAMES</code> to their LAN IP and recreate the container. An existing reverse proxy with a trusted certificate also works.</p>
+          </details>
+<?php } else { ?>
+          <p>HTTPS is not configured by this installation. Update the Docker image or rerun the current LXC installer, or configure your HTTPS reverse proxy. The wizard cannot open a server port itself.</p>
+<?php } ?>
+          <p class="hint">You can continue over HTTP for NZB files or an external downloader.</p>
+        </div>
         <h1>Appearance</h1>
         <p class="lead">Choose how Spotweb looks. You can change this later from the View menu.</p>
         <div class="options" id="themechoices">
@@ -276,6 +299,7 @@
 <script src="js/browser-download/nzb-parser.js?v=<?php echo filemtime(__DIR__.'/../../js/browser-download/nzb-parser.js'); ?>" defer></script>
 <script src="js/browser-download/storage-manager.js?v=<?php echo filemtime(__DIR__.'/../../js/browser-download/storage-manager.js'); ?>" defer></script>
 <script src="js/browser-download/download-manager.js?v=<?php echo max(array_map('filemtime', glob(__DIR__.'/../../js/browser-download/*.js'))); ?>" defer></script>
+<script src="js/setup-https.js" defer></script>
 <script>
 (function () {
   var providers = <?php echo json_encode($providers, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
@@ -328,7 +352,9 @@
     var support = manager.checkBrowserSupport();
     if (!support.supported) {
       $('select-download-location').disabled = true;
-      $('download-location-status').textContent = 'Browser downloads need desktop Chrome or Edge over HTTPS or localhost. Choose another method to continue in this browser.';
+      $('download-location-status').textContent = window.isSecureContext
+        ? 'This browser does not provide all required download features. Use desktop Chrome or Edge, or choose another method.'
+        : 'Browser downloads need HTTPS. Return to Appearance for the HTTPS setup, or choose another download method.';
       return;
     }
     manager.init().then(function() {

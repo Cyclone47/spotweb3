@@ -112,7 +112,7 @@ try {
                 $daoFactory,
                 $settings,
                 $currentSession,
-                ['setupform' => $req->getForm('setupform')]
+                ['setupform' => $req->getForm('setupform'), 'certificate' => $req->getDef('certificate', '')]
             );
             $page->render();
             break;
