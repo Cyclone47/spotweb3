@@ -11,7 +11,8 @@ if [[ ${1:-} == --scenario ]]; then
     check_bridge() { [[ "$1" == vmbr0 ]]; }
     dpkg() { echo amd64; }
     # The helper checks command availability; check_bridge itself is mocked.
-    # shellcheck disable=SC2329
+    # ShellCheck 0.9 calls this SC2317; newer versions call it SC2329.
+    # shellcheck disable=SC2317,SC2329
     ip() { :; }
     pvesh() {
         printf 'pvesh %s\n' "$*" >>"$TEST_LOG"
