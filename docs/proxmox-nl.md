@@ -31,11 +31,12 @@ andere bridge, gebruik dan de aangepaste opdracht onderaan.
 
 ## 3. Open de getoonde link
 
-Aan het einde verschijnt bijvoorbeeld `http://192.168.1.120/?page=setup`.
+Aan het einde verschijnt bijvoorbeeld `https://192.168.1.120/?page=setup`,
+met het echte IP-adres van jouw container.
 Open **de link die jouw installer toont** op een computer in hetzelfde netwerk.
-De eerste stap biedt **Yes, use HTTPS on port 443** aan. Kies die knop als je
-bestanden rechtstreeks met de browser wilt downloaden, en daarna **Continue to
-HTTPS**. Doe dit voordat je je account- en Usenet-gegevens invult.
+Open je Spotweb eerst via HTTP, dan biedt de eerste stap **Yes, use HTTPS on port
+443** aan. Kies daarna **Continue to HTTPS** voordat je je account- en
+Usenet-gegevens invult.
 
 De container heeft een eigen lokaal certificaat. Je browser kan daarom een
 waarschuwing tonen. Voor je eigen installatie kun je via **Geavanceerd → Doorgaan**

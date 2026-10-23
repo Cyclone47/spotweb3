@@ -223,6 +223,17 @@ if ((!NO_START)); then
     systemctl start spotweb-https-renew.timer
     systemctl is-active --quiet apache2 spotweb-nntp-relay.service spotweb-retriever.timer
 fi
-printf '\nInstalled Spotweb. Open http://<container-IP>/?page=setup to configure it.\n'
+printf '\nInstalled Spotweb. Open one of these setup addresses:\n'
+addresses=$(hostname -I)
+for address in $addresses; do
+    if [[ "$address" == *:* ]]; then
+        printf '  https://[%s]/?page=setup\n' "$address"
+    else
+        printf '  https://%s/?page=setup\n' "$address"
+    fi
+done
+if [[ -z "$addresses" ]]; then
+    printf 'No IP address detected. Check the container network configuration.\n'
+fi
 printf 'Persistent data: /var/lib/spotweb\nSchedule: Admin Center > Automatic spot retrieval\n'
 printf 'HTTPS is available on port 443. The setup wizard explains the local certificate and checks browser download support.\n'

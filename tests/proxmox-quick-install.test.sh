@@ -104,7 +104,7 @@ assert_contains "$TEST_LOG" 'pveam download local debian-13-standard_13.2-1_amd6
 assert_contains "$TEST_LOG" 'bundle-installer --id 143 --template local:vztmpl/debian-13-standard_13.2-1_amd64.tar.zst --storage local-lvm'
 assert_contains "$TEST_LOG" '--bridge vmbr0 --hostname spotweb --memory 2048 --cores 2 --disk 16'
 assert_contains "$TEST_LOG" 'https://codeload.github.com/Cyclone47/spotweb3/tar.gz/0123456789012345678901234567890123456789'
-assert_contains "$work/output" 'http://192.0.2.143/?page=setup'
+assert_contains "$work/output" 'https://192.0.2.143/?page=setup'
 
 run_case custom success --yes --id 150 --storage custom --memory 4096 --disk 32
 assert_contains "$TEST_LOG" 'bundle-installer --id 150'

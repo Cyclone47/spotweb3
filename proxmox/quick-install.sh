@@ -132,7 +132,11 @@ main() {
     echo '[4/4] Ready. Open Spotweb3 and complete the setup wizard:'
     addresses=$(pct exec "$CTID" -- hostname -I)
     for address in $addresses; do
-        [[ "$address" == *:* ]] || printf '  http://%s/?page=setup\n' "$address"
+        if [[ "$address" == *:* ]]; then
+            printf '  https://[%s]/?page=setup\n' "$address"
+        else
+            printf '  https://%s/?page=setup\n' "$address"
+        fi
     done
     printf '\nSet your Spotweb admin password and Usenet details in the wizard.\n'
     printf 'Guest administration: pct enter %s (no Linux root password required).\n' "$CTID"
